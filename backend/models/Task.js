@@ -39,4 +39,12 @@ const taskSchema = new mongoose.Schema({
   }
 });
 
+// Add a pre-save hook to update completionTime when status changes to completed
+taskSchema.pre('save', function(next) {
+  if (this.isModified('status') && this.status === 'completed' && !this.completionTime) {
+    this.completionTime = new Date();
+  }
+  next();
+});
+
 module.exports = mongoose.model('Task', taskSchema); 

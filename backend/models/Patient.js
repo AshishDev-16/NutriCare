@@ -3,51 +3,57 @@ const mongoose = require('mongoose');
 const patientSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: [true, 'Please add patient name'],
+    required: [true, 'Name is required'],
     trim: true
-  },
-  diseases: [{
-    type: String,
-    required: true
-  }],
-  allergies: [{
-    type: String
-  }],
-  roomNumber: {
-    type: String,
-    required: [true, 'Please add room number']
-  },
-  bedNumber: {
-    type: String,
-    required: [true, 'Please add bed number']
-  },
-  floorNumber: {
-    type: String,
-    required: [true, 'Please add floor number']
   },
   age: {
     type: Number,
-    required: [true, 'Please add age']
+    required: [true, 'Age is required']
   },
   gender: {
     type: String,
-    enum: ['male', 'female', 'other'],
-    required: [true, 'Please specify gender']
+    required: [true, 'Gender is required'],
+    enum: ['male', 'female', 'other']
   },
+  roomNumber: {
+    type: String,
+    required: [true, 'Room number is required']
+  },
+  bedNumber: {
+    type: String,
+    required: [true, 'Bed number is required']
+  },
+  floorNumber: {
+    type: String,
+    required: [true, 'Floor number is required']
+  },
+  diseases: [{
+    type: String,
+    trim: true
+  }],
+  allergies: [{
+    type: String,
+    trim: true
+  }],
   contactNumber: {
     type: String,
-    required: [true, 'Please add contact number']
+    required: [true, 'Contact number is required']
   },
   emergencyContact: {
-    name: String,
-    relation: String,
-    phone: String
+    name: {
+      type: String,
+      required: [true, 'Emergency contact name is required']
+    },
+    relation: {
+      type: String,
+      required: [true, 'Emergency contact relation is required']
+    },
+    phone: {
+      type: String,
+      required: [true, 'Emergency contact phone is required']
+    }
   },
   createdAt: {
-    type: Date,
-    default: Date.now
-  },
-  updatedAt: {
     type: Date,
     default: Date.now
   }

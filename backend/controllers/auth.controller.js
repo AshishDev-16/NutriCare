@@ -54,7 +54,10 @@ exports.login = async (req, res) => {
     const user = await User.findOne({ email }).select('+password');
 
     if (!user || !(await user.matchPassword(password))) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid credentials'
+      });
     }
 
     const token = generateToken(user._id);
@@ -65,7 +68,7 @@ exports.login = async (req, res) => {
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
     });
 
-    res.json({
+    return res.status(200).json({
       success: true,
       user: {
         id: user._id,
@@ -76,7 +79,11 @@ exports.login = async (req, res) => {
       token: token
     });
   } catch (error) {
-    res.status(400).json({ success: false, message: error.message });
+    console.error('Login error:', error);
+    res.status(400).json({ 
+      success: false, 
+      message: error.message || 'Login failed' 
+    });
   }
 };
 
@@ -84,12 +91,23 @@ exports.login = async (req, res) => {
 // @route   GET /api/v1/auth/logout
 // @access  Private
 exports.logout = (req, res) => {
-  res.cookie('token', 'none', {
-    expires: new Date(Date.now() + 10 * 1000),
-    httpOnly: true,
-  });
+  try {
+    // Clear the token cookie
+    res.cookie('token', 'none', {
+      expires: new Date(Date.now() + 10 * 1000),
+      httpOnly: true,
+    });
 
-  res.json({ success: true, message: 'User logged out successfully' });
+    res.status(200).json({
+      success: true,
+      message: 'Logged out successfully'
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Error logging out'
+    });
+  }
 };
 
 // @desc    Get current logged in user

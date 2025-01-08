@@ -1,23 +1,24 @@
 const express = require('express');
 const router = express.Router();
+const { protect, authorize } = require('../middleware/auth.middleware');
 const {
-  getPatients,
-  getPatient,
   createPatient,
+  getPatients,
   updatePatient,
   deletePatient
 } = require('../controllers/patient.controller');
-const { protect, authorize } = require('../middleware/auth.middleware');
+
+router.use(protect);
+router.use(authorize('manager'));
 
 router
   .route('/')
-  .get(protect, getPatients)
-  .post(protect, authorize('manager'), createPatient);
+  .get(getPatients)
+  .post(createPatient);
 
 router
   .route('/:id')
-  .get(protect, getPatient)
-  .put(protect, authorize('manager'), updatePatient)
-  .delete(protect, authorize('manager'), deletePatient);
+  .put(updatePatient)
+  .delete(deletePatient);
 
 module.exports = router; 

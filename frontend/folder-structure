@@ -1,0 +1,35 @@
+frontend/
+├── app/
+│   ├── (auth)/
+│   │   ├── login/
+│   │   └── register/
+│   ├── (dashboard)/
+│   │   ├── manager/
+│   │   ├── pantry/
+│   │   └── delivery/
+│   ├── layout.tsx
+│   └── page.tsx
+├── components/
+│   ├── ui/
+│   ├── common/
+│   │   ├── Navbar.tsx
+│   │   ├── Sidebar.tsx
+│   │   └── Footer.tsx
+│   ├── forms/
+│   │   ├── LoginForm.tsx
+│   │   └── RegisterForm.tsx
+│   ├── dashboard/
+│   │   ├── Stats.tsx
+│   │   └── RecentActivity.tsx
+│   └── providers/
+│       └── ThemeProvider.tsx
+├── lib/
+│   ├── utils.ts
+│   └── api.ts
+├── hooks/
+│   ├── useAuth.ts
+│   └── useApi.ts
+├── types/
+│   └── index.ts
+└── styles/
+    └── globals.css 

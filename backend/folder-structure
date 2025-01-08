@@ -1,0 +1,24 @@
+backend/
+├── config/
+│   └── db.js
+├── middleware/
+│   ├── auth.middleware.js
+│   └── error.middleware.js
+├── models/
+│   ├── User.js
+│   ├── Patient.js
+│   ├── DietChart.js
+│   ├── Meal.js
+│   ├── Pantry.js
+│   ├── Delivery.js
+│   └── Task.js
+├── routes/
+│   ├── auth.routes.js
+│   └── index.routes.js
+├── controllers/
+│   └── auth.controller.js
+├── utils/
+│   └── errorHandler.js
+├── .env
+├── .gitignore
+└── server.js 

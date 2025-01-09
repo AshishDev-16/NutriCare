@@ -1,7 +1,10 @@
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://hospital-food-delivery.onrender.com/api/v1';
+export const getBaseUrl = () => {
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '') || 'http://localhost:5000'
+  return baseUrl
+}
 
 export const API_CONFIG = {
-  baseURL: API_BASE_URL,
+  baseURL: getBaseUrl(),
   headers: {
     'Content-Type': 'application/json',
   },

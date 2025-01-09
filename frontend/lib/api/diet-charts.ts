@@ -1,4 +1,4 @@
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL
+import { getBaseUrl } from './config'
 
 export interface DietChart {
   _id: string
@@ -37,25 +37,36 @@ export interface DietChart {
   createdAt: string
 }
 
-export async function getDietCharts() {
+export async function getDietCharts(): Promise<DietChart[]> {
   const token = localStorage.getItem("token")
-  const response = await fetch(`${BASE_URL}/api/v1/diet-charts`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch diet charts")
+  
+  if (!token) {
+    throw new Error("No authentication token found")
   }
 
-  const data = await response.json()
-  return data.data
+  try {
+    const response = await fetch(`${getBaseUrl()}/api/v1/diet-charts`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch diet charts")
+    }
+
+    const data = await response.json()
+    return data.data
+  } catch (error) {
+    console.error('Diet Charts API Request Failed:', error)
+    throw error
+  }
 }
 
 export async function createDietChart(data: Omit<DietChart, '_id' | 'createdAt' | 'createdBy'>) {
   const token = localStorage.getItem("token")
-  const response = await fetch(`${BASE_URL}/api/v1/diet-charts`, {
+  const response = await fetch(`${getBaseUrl()}/api/v1/diet-charts`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

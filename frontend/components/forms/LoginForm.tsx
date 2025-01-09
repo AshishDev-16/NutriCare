@@ -39,53 +39,38 @@ export default function LoginForm() {
     setIsLoading(true)
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/login`, {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '') || 'http://localhost:5000'
+      const response = await fetch(`${baseUrl}/api/v1/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(values),
-        credentials: 'include'
       })
-
-      const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.message || "Something went wrong")
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.message || "Invalid credentials")
       }
 
-      if (!data.success || !data.token) {
-        throw new Error("Invalid response from server")
+      const data = await response.json()
+      
+      if (data.success) {
+        localStorage.setItem("token", data.token)
+        toast({
+          title: "Success",
+          description: "Logged in successfully",
+        })
+        router.push("/manager")
+      } else {
+        throw new Error(data.message || "Login failed")
       }
-
-      // Store token
-      localStorage.setItem("token", data.token)
-
-      // Redirect based on role
-      switch (data.user.role) {
-        case "manager":
-          router.push("/manager")
-          break
-        case "pantry_staff":
-          router.push("/pantry")
-          break
-        case "delivery_staff":
-          router.push("/delivery")
-          break
-        default:
-          router.push("/")
-      }
-
-      toast({
-        title: "Success",
-        description: "Logged in successfully",
-      })
     } catch (error) {
-      console.error('Login error:', error)
+      console.error("Login error:", error)
       toast({
         variant: "destructive",
         title: "Error",
-        description: (error as Error).message || "Failed to login",
+        description: error instanceof Error ? error.message : "Failed to login",
       })
     } finally {
       setIsLoading(false)

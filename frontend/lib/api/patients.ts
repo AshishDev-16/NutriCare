@@ -1,4 +1,4 @@
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL
+import { getBaseUrl } from './config'
 
 export interface Patient {
   _id?: string
@@ -20,25 +20,36 @@ export interface Patient {
   createdAt?: string
 }
 
-export async function getPatients() {
+export async function getPatients(): Promise<Patient[]> {
   const token = localStorage.getItem("token")
-  const response = await fetch(`${BASE_URL}/api/v1/patients`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  })
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch patients")
+  
+  if (!token) {
+    throw new Error("No authentication token found")
   }
 
-  const data = await response.json()
-  return data.data
+  try {
+    const response = await fetch(`${getBaseUrl()}/api/v1/patients`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch patients")
+    }
+
+    const data = await response.json()
+    return data.data
+  } catch (error) {
+    console.error('Patients API Request Failed:', error)
+    throw error
+  }
 }
 
 export async function createPatient(patientData: Omit<Patient, "id" | "createdAt">) {
   const token = localStorage.getItem("token")
-  const response = await fetch(`${BASE_URL}/api/v1/patients`, {
+  const response = await fetch(`${getBaseUrl()}/api/v1/patients`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -57,7 +68,7 @@ export async function createPatient(patientData: Omit<Patient, "id" | "createdAt
 
 export async function updatePatient(id: string, patientData: Partial<Patient>) {
   const token = localStorage.getItem("token")
-  const response = await fetch(`${BASE_URL}/api/v1/patients/${id}`, {
+  const response = await fetch(`${getBaseUrl()}/api/v1/patients/${id}`, {
     method: "PUT",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -76,7 +87,7 @@ export async function updatePatient(id: string, patientData: Partial<Patient>) {
 
 export async function deletePatient(id: string) {
   const token = localStorage.getItem("token")
-  const response = await fetch(`${BASE_URL}/api/v1/patients/${id}`, {
+  const response = await fetch(`${getBaseUrl()}/api/v1/patients/${id}`, {
     method: "DELETE",
     headers: {
       Authorization: `Bearer ${token}`,

@@ -6,6 +6,7 @@ import { format } from "date-fns"
 import { Button } from "@/components/ui/button"
 import { StatsCard } from "./StatsCard"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+
 export function DashboardContent() {
   const { stats, isLoading, error, mutate } = useDashboard()
 
@@ -30,8 +31,7 @@ export function DashboardContent() {
     )
   }
 
-  return (  
-
+  return (
     <div className="space-y-6">
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -74,9 +74,9 @@ export function DashboardContent() {
                 {stats.recentDietCharts.map((chart) => (
                   <div key={chart._id} className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium">{chart.patient.name}</p>
+                      <p className="font-medium">{chart.patient?.name || 'Unknown'}</p>
                       <p className="text-sm text-muted-foreground">
-                        Room {chart.patient.roomNumber}-{chart.patient.bedNumber}
+                        Room {chart.patient?.roomNumber || 'N/A'}-{chart.patient?.bedNumber || 'N/A'}
                       </p>
                     </div>
                     <div className="text-sm text-muted-foreground">

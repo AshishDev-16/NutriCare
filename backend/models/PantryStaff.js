@@ -1,24 +1,38 @@
 const mongoose = require('mongoose');
 
 const pantryStaffSchema = new mongoose.Schema({
-  user: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+  name: {
+    type: String,
     required: true
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true
   },
   contactNumber: {
     type: String,
-    required: [true, 'Please add a contact number']
+    required: true
   },
   location: {
-    floor: String,
-    wing: String
+    floor: {
+      type: String,
+      required: true
+    },
+    wing: {
+      type: String,
+      required: true
+    }
   },
   status: {
     type: String,
     enum: ['available', 'busy', 'off-duty'],
     default: 'available'
-  }
+  },
+  currentTasks: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Task'
+  }]
 }, {
   timestamps: true
 });

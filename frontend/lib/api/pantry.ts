@@ -35,35 +35,41 @@ export async function getPantryStaff(): Promise<PantryStaff[]> {
   return data.data
 }
 
-export async function createPantryStaff(data: Omit<PantryStaff, '_id' | 'status' | 'currentTasks'>) {
+export async function createPantryStaff(data: {
+  name: string
+  email: string
+  contactNumber: string
+  floor: string
+  wing: string
+}) {
   const token = localStorage.getItem("token")
   
   if (!token) {
     throw new Error("No authentication token found")
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '') || 'http://localhost:5000'
-  console.log('Making request to:', `${baseUrl}/api/v1/pantry/staff`) // Debug log
-  console.log('With data:', data) // Debug log
-
-  const response = await fetch(`${baseUrl}/api/v1/pantry/staff`, {
+  const response = await fetch(`${getBaseUrl()}/api/v1/pantry/staff`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(data)
-  })
-
-  console.log('Response status:', response.status) // Debug log
-  const responseData = await response.json()
-  console.log('Response data:', responseData) // Debug log
+    body: JSON.stringify({
+      name: data.name,
+      email: data.email,
+      contactNumber: data.contactNumber,
+      floor: data.floor,
+      wing: data.wing
+    })
+  });
 
   if (!response.ok) {
-    throw new Error(responseData.message || "Failed to create pantry staff")
+    const error = await response.json();
+    throw new Error(error.message || "Failed to create pantry staff");
   }
 
-  return responseData.data
+  const responseData = await response.json();
+  return responseData.data;
 }
 
 export async function updatePantryStaff(id: string, data: {

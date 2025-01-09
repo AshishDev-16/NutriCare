@@ -55,40 +55,30 @@ export function AddPantryStaffDialog({ open, onOpenChange }: AddPantryStaffDialo
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      setIsLoading(true)
-      console.log('Submitting values:', values) // Debug log
-
-      const staffData = {
+      setIsLoading(true);
+      await createPantryStaff({
         name: values.name,
         email: values.email,
         contactNumber: values.contactNumber,
-        location: {
-          floor: values.floor,
-          wing: values.wing
-        }
-      }
-
-      console.log('Staff data being sent:', staffData) // Debug log
-
-      const result = await createPantryStaff(staffData)
-      console.log('API Response:', result) // Debug log
+        floor: values.floor,
+        wing: values.wing
+      });
 
       toast({
         title: "Success",
-        description: "Staff member added successfully",
-      })
-      mutate()
-      onOpenChange(false)
-      form.reset()
+        description: "Staff member created successfully",
+      });
+      mutate();
+      onOpenChange(false);
     } catch (error) {
-      console.error('Error creating staff:', error) // Debug log
+      console.error('Error creating staff:', error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to add staff member",
-      })
+        description: error instanceof Error ? error.message : "Failed to create staff member",
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 

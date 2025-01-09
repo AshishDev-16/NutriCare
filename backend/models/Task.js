@@ -3,8 +3,7 @@ const mongoose = require('mongoose');
 const taskSchema = new mongoose.Schema({
   description: {
     type: String,
-    required: [true, 'Please add a description'],
-    trim: true
+    required: true
   },
   type: {
     type: String,
@@ -13,17 +12,17 @@ const taskSchema = new mongoose.Schema({
   },
   assignedTo: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+    ref: 'PantryStaff',
     default: null
   },
   dueDate: {
     type: Date,
-    required: [true, 'Please add a due date']
+    required: true
   },
   priority: {
     type: String,
     enum: ['low', 'medium', 'high'],
-    default: 'medium'
+    default: 'low'
   },
   status: {
     type: String,
@@ -40,14 +39,9 @@ const taskSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
   }
 }, {
-  toJSON: { virtuals: true },
-  toObject: { virtuals: true }
+  timestamps: true
 });
 
 module.exports = mongoose.model('Task', taskSchema); 

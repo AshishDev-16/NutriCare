@@ -51,38 +51,52 @@ exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    // Check if email and password are provided
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide email and password'
+      });
+    }
+
+    // Find user by email and explicitly select password
     const user = await User.findOne({ email }).select('+password');
 
-    if (!user || !(await user.matchPassword(password))) {
+    if (!user) {
       return res.status(401).json({
         success: false,
         message: 'Invalid credentials'
       });
     }
 
-    const token = generateToken(user._id);
+    // Check if password matches
+    const isMatch = await user.matchPassword(password);
 
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-    });
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid credentials'
+      });
+    }
 
-    return res.status(200).json({
+    // Generate token
+    const token = user.getSignedJwtToken();
+
+    res.status(200).json({
       success: true,
+      token,
       user: {
-        id: user._id,
+        _id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role,
-      },
-      token: token
+        role: user.role
+      }
     });
   } catch (error) {
     console.error('Login error:', error);
-    res.status(400).json({ 
-      success: false, 
-      message: error.message || 'Login failed' 
+    res.status(500).json({
+      success: false,
+      message: 'Error logging in'
     });
   }
 };

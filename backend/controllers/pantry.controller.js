@@ -176,29 +176,11 @@ exports.removeStaffFromPantry = async (req, res) => {
 
 exports.getPantryStaff = async (req, res) => {
   try {
-    const pantryStaff = await PantryStaff.find()
-      .populate({
-        path: 'user',
-        select: 'name email role'
-      })
-      .sort('-createdAt');
-
-    console.log('Found pantry staff:', pantryStaff); // Debug log
-
-    const transformedData = pantryStaff.map(staff => ({
-      _id: staff._id,
-      name: staff.user.name,
-      email: staff.user.email,
-      contactNumber: staff.contactNumber,
-      location: staff.location,
-      status: staff.status
-    }));
-
-    console.log('Transformed data:', transformedData); // Debug log
+    const pantryStaff = await PantryStaff.find().sort('-createdAt');
 
     res.json({
       success: true,
-      data: transformedData
+      data: pantryStaff
     });
   } catch (error) {
     console.error('Error fetching pantry staff:', error);
@@ -211,63 +193,29 @@ exports.getPantryStaff = async (req, res) => {
 
 exports.createPantryStaff = async (req, res) => {
   try {
-    console.log('Creating pantry staff with data:', req.body);
-
     const { name, email, contactNumber, floor, wing } = req.body;
 
-    // Check if email already exists
-    const existingUser = await User.findOne({ email: email.toLowerCase().trim() });
+    console.log('Received data:', { name, email, contactNumber, floor, wing }); // Debug log
 
-    if (existingUser) {
-      console.log('Existing user found:', existingUser);
-      return res.status(400).json({
-        success: false,
-        message: 'Email already exists'
-      });
-    }
-
-    // Create user with pantry_staff role
-    const user = await User.create({
-      name,
-      email: email.toLowerCase().trim(),
-      password: contactNumber, // Using contact number as initial password
-      role: 'pantry_staff'
-    });
-
-    console.log('Created user:', user); // Debug log
-
-    // Create pantry staff record
     const pantryStaff = await PantryStaff.create({
-      user: user._id,
+      name,
+      email,
       contactNumber,
       location: {
         floor,
         wing
-      }
+      },
+      status: 'available'
     });
 
-    // Populate with full user details
-    await pantryStaff.populate({
-      path: 'user',
-      select: 'name email role'
-    });
+    console.log('Created pantry staff:', pantryStaff); // Debug log
 
-    console.log('Created pantry staff with populated user:', pantryStaff); // Debug log
-
-    // Return transformed data
     res.status(201).json({
       success: true,
-      data: {
-        _id: pantryStaff._id,
-        name: user.name,
-        email: user.email,
-        contactNumber: pantryStaff.contactNumber,
-        location: pantryStaff.location,
-        status: pantryStaff.status
-      }
+      data: pantryStaff
     });
   } catch (error) {
-    console.error('Error in createPantryStaff:', error);
+    console.error('Error creating pantry staff:', error);
     res.status(400).json({
       success: false,
       message: error.message

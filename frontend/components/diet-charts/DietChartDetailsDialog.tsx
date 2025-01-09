@@ -10,7 +10,7 @@ import {
 import { DietChart } from "@/lib/api/diet-charts"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
-import { Badge } from "@/components/ui/badge"
+import { Badge } from "../ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 interface DietChartDetailsDialogProps {

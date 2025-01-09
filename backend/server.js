@@ -11,9 +11,9 @@ const app = express();
 
 // CORS Configuration
 const allowedOrigins = [
+  'http://localhost:3000',
   process.env.FRONTEND_URL,
-  'https://hospital-food-delivery-m38p.vercel.app',
-  'http://localhost:3000'
+  'https://hospital-food-delivery-m38p.vercel.app'
 ];
 
 app.use(cors({
@@ -29,7 +29,7 @@ app.use(cors({
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // Other middleware

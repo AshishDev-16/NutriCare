@@ -1,79 +1,56 @@
 const Task = require('../models/Task');
-const Meal = require('../models/Meal');
 
 // @desc    Get all tasks
 // @route   GET /api/v1/tasks
-// @access  Private
+// @access  Private (Manager)
 exports.getTasks = async (req, res) => {
   try {
-    // If user is not manager, only show their assigned tasks
-    const query = req.user.role === 'manager' 
-      ? {} 
-      : { assignedTo: req.user.id };
+    // First verify if we can get user data
+    console.log('Fetching tasks with populated data...');
 
-    const tasks = await Task.find(query)
-      .populate('meal', 'type status')
-      .populate('assignedTo', 'name')
-      .populate('pantry', 'name location')
+    const tasks = await Task.find()
       .populate({
-        path: 'meal',
-        populate: {
-          path: 'patient',
-          select: 'name roomNumber bedNumber'
-        }
-      });
+        path: 'assignedTo',
+        model: 'User',
+        select: 'name email'
+      })
+      .populate('createdBy', 'name')
+      .sort('-createdAt')
+      .lean();
 
-    res.status(200).json({
+    console.log('Raw tasks from DB:', JSON.stringify(tasks, null, 2));
+
+    // Transform with more detailed logging
+    const transformedTasks = tasks.map(task => {
+      console.log('Processing task:', task._id);
+      console.log('AssignedTo data:', task.assignedTo);
+
+      return {
+        _id: task._id,
+        description: task.description,
+        type: task.type,
+        assignedTo: task.assignedTo ? {
+          _id: task.assignedTo._id.toString(),
+          name: task.assignedTo.name
+        } : null,
+        dueDate: task.dueDate,
+        priority: task.priority,
+        status: task.status,
+        notes: task.notes,
+        deliveryLocation: task.deliveryLocation,
+        createdAt: task.createdAt
+      };
+    });
+
+    console.log('Transformed tasks:', JSON.stringify(transformedTasks, null, 2));
+
+    res.json({
       success: true,
-      count: tasks.length,
-      data: tasks
+      data: transformedTasks
     });
   } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error.message
-    });
-  }
-};
-
-// @desc    Get single task
-// @route   GET /api/v1/tasks/:id
-// @access  Private
-exports.getTask = async (req, res) => {
-  try {
-    const task = await Task.findById(req.params.id)
-      .populate('meal', 'type status')
-      .populate('assignedTo', 'name')
-      .populate('pantry', 'name location')
-      .populate({
-        path: 'meal',
-        populate: {
-          path: 'patient',
-          select: 'name roomNumber bedNumber'
-        }
-      });
-
-    if (!task) {
-      return res.status(404).json({
-        success: false,
-        message: 'Task not found'
-      });
-    }
-
-    // Check if user has access to this task
-    if (req.user.role !== 'manager' && task.assignedTo.toString() !== req.user.id) {
-      return res.status(403).json({
-        success: false,
-        message: 'Not authorized to access this task'
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      data: task
-    });
-  } catch (error) {
-    res.status(400).json({
+    console.error('Error in getTasks:', error);
+    res.status(500).json({
       success: false,
       message: error.message
     });
@@ -82,125 +59,78 @@ exports.getTask = async (req, res) => {
 
 // @desc    Create new task
 // @route   POST /api/v1/tasks
-// @access  Private (Manager Only)
+// @access  Private (Manager)
 exports.createTask = async (req, res) => {
   try {
-    const task = await Task.create(req.body);
+    console.log('Received task data:', JSON.stringify(req.body, null, 2));
 
-    // Update meal status if task is created
-    if (task.meal) {
-      await Meal.findByIdAndUpdate(task.meal, {
-        status: 'preparing',
-        assignedTo: task.assignedTo
-      });
-    }
+    const {
+      description,
+      type,
+      assignedTo,
+      dueDate,
+      priority,
+      notes,
+      deliveryLocation
+    } = req.body;
+
+    // Log the deliveryLocation specifically
+    console.log('DeliveryLocation data:', deliveryLocation);
+    console.log('Task type:', type);
+
+    const taskData = {
+      description,
+      type,
+      assignedTo: assignedTo || null,
+      dueDate,
+      priority,
+      notes,
+      deliveryLocation: type === 'delivery' ? deliveryLocation : undefined,
+      createdBy: req.user._id
+    };
+
+    // Log the final data being saved
+    console.log('Data being saved to DB:', JSON.stringify(taskData, null, 2));
+
+    const task = await Task.create(taskData);
+
+    // Log the saved task
+    console.log('Saved task in DB:', JSON.stringify(task.toObject(), null, 2));
+
+    // Populate the assigned staff details
+    await task.populate([
+      {
+        path: 'assignedTo',
+        select: 'name email'
+      },
+      {
+        path: 'createdBy',
+        select: 'name'
+      }
+    ]);
+
+    const transformedTask = {
+      _id: task._id,
+      description: task.description,
+      type: task.type,
+      assignedTo: task.assignedTo ? {
+        _id: task.assignedTo._id,
+        name: task.assignedTo.name
+      } : null,
+      dueDate: task.dueDate,
+      priority: task.priority,
+      status: task.status,
+      notes: task.notes,
+      deliveryLocation: task.deliveryLocation,
+      createdAt: task.createdAt
+    };
 
     res.status(201).json({
       success: true,
-      data: task
+      data: transformedTask
     });
   } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error.message
-    });
-  }
-};
-
-// @desc    Update task status
-// @route   PUT /api/v1/tasks/:id/status
-// @access  Private
-exports.updateTaskStatus = async (req, res) => {
-  try {
-    const { status } = req.body;
-    const updates = { 
-      status,
-      updatedAt: Date.now()
-    };
-
-    // Add timestamps based on status
-    if (status === 'in-progress') {
-      updates.startTime = Date.now();
-    } else if (status === 'completed') {
-      updates.completionTime = Date.now();
-    }
-
-    const task = await Task.findById(req.params.id);
-
-    if (!task) {
-      return res.status(404).json({
-        success: false,
-        message: 'Task not found'
-      });
-    }
-
-    // Check if user is assigned to this task
-    if (req.user.role !== 'manager' && task.assignedTo.toString() !== req.user.id) {
-      return res.status(403).json({
-        success: false,
-        message: 'Not authorized to update this task'
-      });
-    }
-
-    // Update task
-    const updatedTask = await Task.findByIdAndUpdate(
-      req.params.id,
-      updates,
-      {
-        new: true,
-        runValidators: true
-      }
-    );
-
-    // Update meal status based on task status
-    if (task.meal) {
-      let mealStatus = 'preparing';
-      if (status === 'completed') {
-        mealStatus = 'delivered';
-      } else if (status === 'in-progress') {
-        mealStatus = 'delivering';
-      }
-
-      await Meal.findByIdAndUpdate(task.meal, { status: mealStatus });
-    }
-
-    res.status(200).json({
-      success: true,
-      data: updatedTask
-    });
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error.message
-    });
-  }
-};
-
-// @desc    Get tasks by priority
-// @route   GET /api/v1/tasks/priority/:priority
-// @access  Private
-exports.getTasksByPriority = async (req, res) => {
-  try {
-    const query = {
-      priority: req.params.priority
-    };
-
-    // If not manager, only show assigned tasks
-    if (req.user.role !== 'manager') {
-      query.assignedTo = req.user.id;
-    }
-
-    const tasks = await Task.find(query)
-      .populate('meal', 'type status')
-      .populate('assignedTo', 'name')
-      .populate('pantry', 'name location');
-
-    res.status(200).json({
-      success: true,
-      count: tasks.length,
-      data: tasks
-    });
-  } catch (error) {
+    console.error('Error creating task:', error);
     res.status(400).json({
       success: false,
       message: error.message

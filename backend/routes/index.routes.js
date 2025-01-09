@@ -19,6 +19,8 @@ router.use('/auth', require('./auth.routes'));
 router.use('/patients', require('./patient.routes'));
 router.use('/diet-charts', require('./dietChart.routes'));
 router.use('/dashboard', require('./dashboard.routes'));
+router.use('/pantry', require('./pantry.routes'));
+router.use('/tasks', require('./task.routes'));
 
 // Catch-all to log unmatched routes
 router.use('*', (req, res) => {

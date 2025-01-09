@@ -3,15 +3,10 @@ const mongoose = require('mongoose');
 const mealItemSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: [true, 'Item name is required']
+    required: true
   },
-  quantity: {
-    type: String,
-    required: [true, 'Quantity is required']
-  },
-  instructions: {
-    type: String
-  }
+  quantity: String,
+  instructions: String
 });
 
 const mealSchema = new mongoose.Schema({
@@ -23,15 +18,15 @@ const dietChartSchema = new mongoose.Schema({
   patient: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Patient',
-    required: [true, 'Patient is required']
+    required: true
   },
   startDate: {
     type: Date,
-    required: [true, 'Start date is required']
+    required: true
   },
   endDate: {
     type: Date,
-    required: [true, 'End date is required']
+    required: true
   },
   status: {
     type: String,
@@ -46,11 +41,9 @@ const dietChartSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
   }
+}, {
+  timestamps: true
 });
 
-module.exports = mongoose.model('DietChart', dietChartSchema); 
+module.exports = mongoose.model('DietChart', dietChartSchema);

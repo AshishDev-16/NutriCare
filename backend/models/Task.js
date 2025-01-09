@@ -1,50 +1,53 @@
 const mongoose = require('mongoose');
 
 const taskSchema = new mongoose.Schema({
-  meal: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Meal',
+  description: {
+    type: String,
+    required: [true, 'Please add a description'],
+    trim: true
+  },
+  type: {
+    type: String,
+    enum: ['preparation', 'delivery'],
     required: true
   },
   assignedTo: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true
+    default: null
   },
-  pantry: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Pantry',
-    required: true
-  },
-  status: {
-    type: String,
-    enum: ['assigned', 'in-progress', 'completed', 'cancelled'],
-    default: 'assigned'
+  dueDate: {
+    type: Date,
+    required: [true, 'Please add a due date']
   },
   priority: {
     type: String,
     enum: ['low', 'medium', 'high'],
     default: 'medium'
   },
-  startTime: Date,
-  completionTime: Date,
+  status: {
+    type: String,
+    enum: ['pending', 'in_progress', 'completed'],
+    default: 'pending'
+  },
   notes: String,
+  deliveryLocation: {
+    floor: String,
+    wing: String,
+    roomNumber: String
+  },
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
   createdAt: {
     type: Date,
     default: Date.now
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now
   }
-});
-
-// Add a pre-save hook to update completionTime when status changes to completed
-taskSchema.pre('save', function(next) {
-  if (this.isModified('status') && this.status === 'completed' && !this.completionTime) {
-    this.completionTime = new Date();
-  }
-  next();
+}, {
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
 });
 
 module.exports = mongoose.model('Task', taskSchema); 

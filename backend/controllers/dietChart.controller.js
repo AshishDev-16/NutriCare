@@ -6,19 +6,25 @@ const DietChart = require('../models/DietChart');
 exports.getDietCharts = async (req, res) => {
   try {
     const dietCharts = await DietChart.find()
-      .populate('patient', 'name')
-      .populate('createdBy', 'name')
+      .populate({
+        path: 'patient',
+        select: 'name roomNumber bedNumber'
+      })
+      .populate({
+        path: 'createdBy',
+        select: 'name'
+      })
       .sort('-createdAt');
 
     res.json({
       success: true,
-      data: dietCharts
+      data: dietCharts || []
     });
   } catch (error) {
     console.error('Error fetching diet charts:', error);
     res.status(500).json({
       success: false,
-      message: error.message || 'Failed to fetch diet charts'
+      message: error.message
     });
   }
 };

@@ -88,7 +88,12 @@ export function PantryStaffTable() {
               <TableRow key={member._id}>
                 <TableCell>{member.name}</TableCell>
                 <TableCell>{member.contactNumber}</TableCell>
-                <TableCell>{`Floor ${member.location.floor}, ${member.location.wing} Wing`}</TableCell>
+                <TableCell>
+                  {member.location && (member.location.floor || member.location.wing) 
+                    ? `Floor ${member.location.floor || 'N/A'}, ${member.location.wing || 'N/A'} Wing`
+                    : 'Location not set'
+                  }
+                </TableCell>
                 <TableCell>
                   <Badge variant={member.status === 'available' ? 'default' : 'secondary'}>
                     {member.status}

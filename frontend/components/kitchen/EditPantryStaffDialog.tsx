@@ -47,11 +47,11 @@ export function EditPantryStaffDialog({ staff, open, onOpenChange }: EditPantryS
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
-      email: "",
-      contactNumber: "",
-      floor: "",
-      wing: "",
+      name: staff?.name || '',
+      email: staff?.email || '',
+      contactNumber: staff?.contactNumber || '',
+      floor: staff?.location?.floor || '',
+      wing: staff?.location?.wing || ''
     },
   })
 
@@ -89,6 +89,7 @@ export function EditPantryStaffDialog({ staff, open, onOpenChange }: EditPantryS
       mutate()
       onOpenChange(false)
     } catch (error) {
+      console.error('Update error:', error);
       toast({
         variant: "destructive",
         title: "Error",

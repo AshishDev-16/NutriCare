@@ -277,10 +277,10 @@ exports.createPantryStaff = async (req, res) => {
 
 exports.updatePantryStaff = async (req, res) => {
   try {
-    const { name, email, contactNumber, location } = req.body;
+    const { name, email, contactNumber, floor, wing } = req.body;
 
-    // First update the user
-    const pantryStaff = await Pantry.findById(req.params.id).populate('staff');
+    // First find the pantry staff
+    const pantryStaff = await PantryStaff.findById(req.params.id);
     if (!pantryStaff) {
       return res.status(404).json({
         success: false,
@@ -288,38 +288,49 @@ exports.updatePantryStaff = async (req, res) => {
       });
     }
 
-    // Update the user details
-    await User.findByIdAndUpdate(pantryStaff.staff._id, {
+    // Update user details
+    await User.findByIdAndUpdate(pantryStaff.user, {
       name,
       email
     });
 
     // Update pantry staff details
-    const updatedPantryStaff = await Pantry.findByIdAndUpdate(
+    const updatedPantryStaff = await PantryStaff.findByIdAndUpdate(
       req.params.id,
       {
         contactNumber,
-        location
+        location: {
+          floor,
+          wing
+        }
       },
-      { new: true, runValidators: true }
-    ).populate('staff', 'name email');
+      { new: true }
+    ).populate('user', 'name email');
 
     res.json({
       success: true,
-      data: updatedPantryStaff
+      data: {
+        _id: updatedPantryStaff._id,
+        name: updatedPantryStaff.user.name,
+        email: updatedPantryStaff.user.email,
+        contactNumber: updatedPantryStaff.contactNumber,
+        location: updatedPantryStaff.location,
+        status: updatedPantryStaff.status
+      }
     });
   } catch (error) {
     console.error('Error updating pantry staff:', error);
     res.status(400).json({
       success: false,
-      message: error.message || 'Failed to update pantry staff'
+      message: error.message
     });
   }
 };
 
 exports.deletePantryStaff = async (req, res) => {
   try {
-    const pantryStaff = await Pantry.findByIdAndDelete(req.params.id);
+    // Find pantry staff first
+    const pantryStaff = await PantryStaff.findById(req.params.id);
 
     if (!pantryStaff) {
       return res.status(404).json({
@@ -328,14 +339,18 @@ exports.deletePantryStaff = async (req, res) => {
       });
     }
 
-    // Also delete the associated user
-    await User.findByIdAndDelete(pantryStaff.staff);
+    // Delete the user first
+    await User.findByIdAndDelete(pantryStaff.user);
+    
+    // Then delete the pantry staff
+    await PantryStaff.findByIdAndDelete(req.params.id);
 
     res.json({
       success: true,
       message: 'Pantry staff deleted successfully'
     });
   } catch (error) {
+    console.error('Error deleting pantry staff:', error);
     res.status(400).json({
       success: false,
       message: error.message

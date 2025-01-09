@@ -31,6 +31,15 @@ app.use('/api/v1', require('./routes/index.routes'));
 // Error Handler
 app.use(errorMiddleware);
 
+// Add this before your other routes
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'NutriCare API Server',
+    version: '1.0.0',
+    status: 'running'
+  });
+});
+
 const PORT = process.env.PORT || 5000;
 
 // Connect to DB and start server

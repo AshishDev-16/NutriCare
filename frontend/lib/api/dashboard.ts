@@ -29,10 +29,13 @@ export async function getDashboardStats(): Promise<DashboardData> {
   }
 
   try {
-    const response = await fetch(`${BASE_URL}/api/v1/dashboard`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/dashboard`, {
+      method: 'GET',
+      credentials: 'include',
       headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json'
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
       },
     })
 

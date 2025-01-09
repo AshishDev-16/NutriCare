@@ -9,29 +9,44 @@ const errorMiddleware = require('./middleware/error.middleware');
 
 const app = express();
 
-// Middleware
+// CORS Configuration
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  'https://hospital-food-delivery-m38p.vercel.app',
+  'http://localhost:3000'
+];
+
+app.use(cors({
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+}));
+
+// Other middleware
 app.use(helmet());
 app.use(morgan('dev'));
-app.use(cors({
-  origin: [process.env.FRONTEND_URL, 'https://hospital-food-delivery-m38p.vercel.app/'],
-  credentials: true
-}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+// Routes
+app.use('/api/v1', require('./routes/index.routes'));
 
 // Health check route
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
 });
 
-// Routes
-app.use('/api/v1', require('./routes/index.routes'));
-
-// Error Handler
-app.use(errorMiddleware);
-
-// Add this before your other routes
 app.get('/', (req, res) => {
   res.json({ 
     message: 'NutriCare API Server',
@@ -39,6 +54,9 @@ app.get('/', (req, res) => {
     status: 'running'
   });
 });
+
+// Error Handler
+app.use(errorMiddleware);
 
 const PORT = process.env.PORT || 5000;
 

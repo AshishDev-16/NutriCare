@@ -23,7 +23,7 @@ const formSchema = z.object({
   password: z.string().min(6, "Password must be at least 6 characters"),
 })
 
-export default function LoginForm() {
+export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
@@ -48,22 +48,25 @@ export default function LoginForm() {
         body: JSON.stringify(values),
       })
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        throw new Error(errorData.message || "Invalid credentials")
-      }
-
       const data = await response.json()
-      
+      console.log('Login response:', data)
+
       if (data.success) {
         localStorage.setItem("token", data.token)
+        
         toast({
           title: "Success",
           description: "Logged in successfully",
         })
-        router.push("/manager")
-      } else {
-        throw new Error(data.message || "Login failed")
+
+        // Simple redirect based on role
+        const path = data.user.role === 'manager' 
+          ? '/manager' 
+          : data.user.role === 'pantry_staff' 
+            ? '/pantry' 
+            : '/dashboard'
+            
+        window.location.href = path
       }
     } catch (error) {
       console.error("Login error:", error)

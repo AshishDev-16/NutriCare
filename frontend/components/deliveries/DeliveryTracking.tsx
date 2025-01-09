@@ -65,7 +65,21 @@ export function DeliveryTracking({ tasks, isLoading }: DeliveryTrackingProps) {
               </TableCell>
               <TableCell>{task.assignedTo?.name || 'Unassigned'}</TableCell>
               <TableCell>
-                <Badge>{task.status}</Badge>
+                <Badge
+                  variant={
+                    task.status === 'pending' ? 'default' :
+                    task.status === 'in_progress' ? 'secondary' :
+                    task.status === 'completed' ? 'secondary' :
+                    'destructive'
+                  }
+                  className={`capitalize ${
+                    task.status === 'completed' ? 'bg-green-100 text-green-800' :
+                    task.status === 'in_progress' ? 'bg-blue-100 text-blue-800' : 
+                    ''
+                  }`}
+                >
+                  {task.status}
+                  </Badge>
               </TableCell>
               <TableCell>{task.startTime ? format(new Date(task.startTime), 'PPp') : '-'}</TableCell>
               <TableCell>{task.completionTime ? format(new Date(task.completionTime), 'PPp') : '-'}</TableCell>

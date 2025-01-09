@@ -1,183 +1,96 @@
-const Pantry = require('../models/Pantry');
-const User = require('../models/User');
+const Task = require('../models/Task');
 const PantryStaff = require('../models/PantryStaff');
 
-// @desc    Get all pantries
-// @route   GET /api/v1/pantries
-// @access  Private
-exports.getPantries = async (req, res) => {
+// @desc    Get all tasks for pantry staff
+// @route   GET /api/v1/pantry/tasks
+// @access  Private (Pantry Staff only)
+exports.getTasks = async (req, res) => {
   try {
-    const pantries = await Pantry.find()
-      .populate('staff', 'name')
-      .populate('supervisor', 'name');
+    const { type } = req.query;
+    console.log('Query Type:', type);
 
-    res.status(200).json({
-      success: true,
-      count: pantries.length,
-      data: pantries
-    });
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error.message
-    });
-  }
-};
-
-// @desc    Get single pantry
-// @route   GET /api/v1/pantries/:id
-// @access  Private
-exports.getPantry = async (req, res) => {
-  try {
-    const pantry = await Pantry.findById(req.params.id)
-      .populate('staff', 'name')
-      .populate('supervisor', 'name');
-
-    if (!pantry) {
-      return res.status(404).json({
-        success: false,
-        message: 'Pantry not found'
-      });
+    let query = {};
+    
+    if (type) {
+      query.type = type;
     }
 
-    res.status(200).json({
-      success: true,
-      data: pantry
-    });
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error.message
-    });
-  }
-};
+    // Don't filter out completed tasks - we want to see them in history
+    const tasks = await Task.find(query)
+      .populate('assignedTo', 'name')
+      .sort({ updatedAt: -1 }) // Sort by most recent first
+      .lean();
 
-// @desc    Create new pantry
-// @route   POST /api/v1/pantries
-// @access  Private (Manager Only)
-exports.createPantry = async (req, res) => {
-  try {
-    const pantry = await Pantry.create(req.body);
-
-    res.status(201).json({
-      success: true,
-      data: pantry
-    });
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error.message
-    });
-  }
-};
-
-// @desc    Update pantry
-// @route   PUT /api/v1/pantries/:id
-// @access  Private (Manager Only)
-exports.updatePantry = async (req, res) => {
-  try {
-    const pantry = await Pantry.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      {
-        new: true,
-        runValidators: true
-      }
-    );
-
-    if (!pantry) {
-      return res.status(404).json({
-        success: false,
-        message: 'Pantry not found'
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      data: pantry
-    });
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error.message
-    });
-  }
-};
-
-// @desc    Add staff to pantry
-// @route   PUT /api/v1/pantries/:id/staff
-// @access  Private (Manager Only)
-exports.addStaffToPantry = async (req, res) => {
-  try {
-    const { staffId } = req.body;
-    const pantry = await Pantry.findByIdAndUpdate(
-      req.params.id,
-      {
-        $addToSet: { staff: staffId } // $addToSet prevents duplicate staff entries
+    const formattedTasks = tasks.map(task => ({
+      _id: task._id,
+      description: task.description,
+      status: task.status,
+      priority: task.priority,
+      dueDate: task.dueDate,
+      assignedTo: {
+        name: task.assignedTo?.name || 'Unassigned'
       },
-      {
-        new: true,
-        runValidators: true
-      }
-    );
+      type: task.type,
+      notes: task.notes || '',
+      roomNumber: task.roomNumber,
+      patientName: task.patientName,
+      deliveryLocation: task.deliveryLocation,
+      createdAt: task.createdAt,
+      updatedAt: task.updatedAt
+    }));
 
-    if (!pantry) {
-      return res.status(404).json({
-        success: false,
-        message: 'Pantry not found'
-      });
-    }
-
-    res.status(200).json({
+    res.json({
       success: true,
-      data: pantry
+      data: formattedTasks
     });
   } catch (error) {
-    res.status(400).json({
+    console.error('Error fetching pantry tasks:', error);
+    res.status(500).json({
       success: false,
-      message: error.message
+      message: error.message || 'Failed to fetch tasks'
     });
   }
 };
 
-// @desc    Remove staff from pantry
-// @route   DELETE /api/v1/pantries/:id/staff/:staffId
-// @access  Private (Manager Only)
-exports.removeStaffFromPantry = async (req, res) => {
+// @desc    Update task status
+// @route   PATCH /api/v1/pantry/tasks/:id/status
+// @access  Private (Pantry Staff only)
+exports.updateTaskStatus = async (req, res) => {
   try {
-    const pantry = await Pantry.findByIdAndUpdate(
+    const { status } = req.body;
+    const task = await Task.findByIdAndUpdate(
       req.params.id,
-      {
-        $pull: { staff: req.params.staffId }
+      { 
+        status,
+        ...(status === 'completed' ? { completionTime: Date.now() } : {})
       },
-      {
-        new: true
-      }
-    );
+      { new: true }
+    ).populate('assignedTo', 'name');
 
-    if (!pantry) {
+    if (!task) {
       return res.status(404).json({
         success: false,
-        message: 'Pantry not found'
+        message: 'Task not found'
       });
     }
 
-    res.status(200).json({
+    res.json({
       success: true,
-      data: pantry
+      data: task
     });
   } catch (error) {
-    res.status(400).json({
+    console.error('Error updating task status:', error);
+    res.status(500).json({
       success: false,
-      message: error.message
+      message: error.message || 'Failed to update task status'
     });
   }
 };
 
+// Existing staff management functions
 exports.getPantryStaff = async (req, res) => {
   try {
     const pantryStaff = await PantryStaff.find().sort('-createdAt');
-
     res.json({
       success: true,
       data: pantryStaff
@@ -194,9 +107,6 @@ exports.getPantryStaff = async (req, res) => {
 exports.createPantryStaff = async (req, res) => {
   try {
     const { name, email, contactNumber, floor, wing } = req.body;
-
-    console.log('Received data:', { name, email, contactNumber, floor, wing }); // Debug log
-
     const pantryStaff = await PantryStaff.create({
       name,
       email,
@@ -207,8 +117,6 @@ exports.createPantryStaff = async (req, res) => {
       },
       status: 'available'
     });
-
-    console.log('Created pantry staff:', pantryStaff); // Debug log
 
     res.status(201).json({
       success: true,
@@ -226,9 +134,6 @@ exports.createPantryStaff = async (req, res) => {
 exports.updatePantryStaff = async (req, res) => {
   try {
     const { name, email, contactNumber, floor, wing } = req.body;
-    console.log('Update request body:', req.body);
-
-    // Find and update pantry staff
     const updatedPantryStaff = await PantryStaff.findByIdAndUpdate(
       req.params.id,
       {
@@ -250,8 +155,6 @@ exports.updatePantryStaff = async (req, res) => {
       });
     }
 
-    console.log('Updated staff:', updatedPantryStaff);
-
     res.json({
       success: true,
       data: updatedPantryStaff
@@ -268,17 +171,13 @@ exports.updatePantryStaff = async (req, res) => {
 exports.deletePantryStaff = async (req, res) => {
   try {
     const pantryStaff = await PantryStaff.findById(req.params.id);
-
     if (!pantryStaff) {
       return res.status(404).json({
         success: false,
         message: 'Pantry staff not found'
       });
     }
-
-    // Delete the pantry staff
     await PantryStaff.findByIdAndDelete(req.params.id);
-
     res.json({
       success: true,
       message: 'Pantry staff deleted successfully'
@@ -286,6 +185,33 @@ exports.deletePantryStaff = async (req, res) => {
   } catch (error) {
     console.error('Error deleting pantry staff:', error);
     res.status(400).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+// @desc    Create a test task (temporary)
+// @route   POST /api/v1/pantry/tasks/test
+// @access  Private
+exports.createTestTask = async (req, res) => {
+  try {
+    const task = await Task.create({
+      description: "Test preparation task",
+      type: "preparation",
+      status: "pending",
+      priority: "high",
+      scheduledFor: new Date(),
+      assignedTo: req.user._id
+    });
+
+    res.status(201).json({
+      success: true,
+      data: task
+    });
+  } catch (error) {
+    console.error('Error creating test task:', error);
+    res.status(500).json({
       success: false,
       message: error.message
     });

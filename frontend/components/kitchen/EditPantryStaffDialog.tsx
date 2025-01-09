@@ -68,37 +68,33 @@ export function EditPantryStaffDialog({ staff, open, onOpenChange }: EditPantryS
   }, [staff, form])
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    if (!staff?._id) return
+    if (!staff?._id) return;
 
     try {
-      setIsLoading(true)
-      const updateData = {
+      setIsLoading(true);
+      await updatePantryStaff(staff._id, {
         name: values.name,
         email: values.email,
         contactNumber: values.contactNumber,
         floor: values.floor,
         wing: values.wing
-      };
-
-      console.log('Sending update data:', updateData); // Debug log
-
-      await updatePantryStaff(staff._id, updateData);
+      });
 
       toast({
         title: "Success",
         description: "Staff member updated successfully",
-      })
-      mutate()
-      onOpenChange(false)
+      });
+      mutate();
+      onOpenChange(false);
     } catch (error) {
       console.error('Update error:', error);
       toast({
         variant: "destructive",
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to update staff member",
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 

@@ -45,19 +45,47 @@ export async function getDietCharts(): Promise<DietChart[]> {
   }
 
   try {
-    const response = await fetch(`${getBaseUrl()}/api/v1/diet-charts`, {
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '') || 'http://localhost:5000'
+    
+    // First get diet charts
+    const dietChartsResponse = await fetch(`${baseUrl}/api/v1/diet-charts`, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
     })
 
-    if (!response.ok) {
+    if (!dietChartsResponse.ok) {
       throw new Error("Failed to fetch diet charts")
     }
 
-    const data = await response.json()
-    return data.data
+    const dietChartsData = await dietChartsResponse.json()
+
+    // Get patient details for each diet chart
+    const patientsResponse = await fetch(`${baseUrl}/api/v1/patients`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    })
+
+    if (!patientsResponse.ok) {
+      throw new Error("Failed to fetch patients")
+    }
+
+    const patientsData = await patientsResponse.json()
+    const patientsMap = new Map(patientsData.data.map((patient: any) => [patient._id, patient]))
+
+    // Merge diet charts with patient details
+    const transformedData = dietChartsData.data.map((chart: any) => ({
+      ...chart,
+      patient: {
+        ...chart.patient,
+        ...(patientsMap.get(chart.patient._id) || {}),
+      }
+    }))
+
+    return transformedData
   } catch (error) {
     console.error('Diet Charts API Request Failed:', error)
     throw error

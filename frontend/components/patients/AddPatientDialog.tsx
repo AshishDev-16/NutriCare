@@ -73,8 +73,7 @@ export function AddPatientDialog({ open, onOpenChange }: AddPatientDialogProps) 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       setIsLoading(true)
-      console.log('Submitting form with values:', values)
-
+      
       const patientData = {
         name: values.name,
         age: values.age,

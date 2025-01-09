@@ -1,197 +1,93 @@
-const Meal = require('../models/Meal');
 const Task = require('../models/Task');
 
-// @desc    Get all deliveries for delivery staff
+// @desc    Get all deliveries
 // @route   GET /api/v1/deliveries
-// @access  Private (Delivery Staff)
+// @access  Private
 exports.getDeliveries = async (req, res) => {
   try {
-    const deliveries = await Meal.find({
-      status: { $in: ['ready', 'delivering'] },
-      deliveredBy: null
+    const deliveryTasks = await Task.find({ 
+      type: 'delivery',
     })
-      .populate('patient', 'name roomNumber bedNumber floorNumber')
-      .populate('dietChart', 'dietaryRestrictions')
-      .populate('assignedTo', 'name');
+    .populate('assignedTo', 'name email')
+    .sort('-createdAt');
 
-    res.status(200).json({
+    console.log('Fetched delivery tasks:', deliveryTasks);
+
+    res.json({
       success: true,
-      count: deliveries.length,
-      data: deliveries
+      data: deliveryTasks
     });
   } catch (error) {
-    res.status(400).json({
+    console.error('Error fetching delivery tasks:', error);
+    res.status(500).json({
       success: false,
-      message: error.message
+      message: error.message || 'Failed to fetch deliveries'
     });
   }
 };
 
-// @desc    Get my deliveries (completed)
-// @route   GET /api/v1/deliveries/my-deliveries
-// @access  Private (Delivery Staff)
-exports.getMyDeliveries = async (req, res) => {
+// @desc    Update delivery status
+// @route   PUT /api/v1/deliveries/:id/status
+// @access  Private
+exports.updateDeliveryStatus = async (req, res) => {
   try {
-    const deliveries = await Meal.find({
-      deliveredBy: req.user.id,
-      status: 'delivered'
-    })
-      .populate('patient', 'name roomNumber bedNumber floorNumber')
-      .populate('dietChart', 'dietaryRestrictions');
+    const { status, note } = req.body;
+    
+    const task = await Task.findByIdAndUpdate(
+      req.params.id,
+      {
+        status,
+        notes: note,
+        ...(status === 'in_progress' && { startTime: new Date() }),
+        ...(status === 'completed' && { completionTime: new Date() })
+      },
+      { new: true }
+    ).populate('assignedTo', 'name email');
 
-    res.status(200).json({
-      success: true,
-      count: deliveries.length,
-      data: deliveries
-    });
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error.message
-    });
-  }
-};
-
-// @desc    Start delivery
-// @route   PUT /api/v1/deliveries/:id/start
-// @access  Private (Delivery Staff)
-exports.startDelivery = async (req, res) => {
-  try {
-    const meal = await Meal.findById(req.params.id);
-
-    if (!meal) {
+    if (!task) {
       return res.status(404).json({
         success: false,
-        message: 'Meal not found'
+        message: 'Delivery task not found'
       });
     }
 
-    if (meal.status !== 'ready') {
-      return res.status(400).json({
-        success: false,
-        message: 'Meal is not ready for delivery'
-      });
-    }
-
-    meal.status = 'delivering';
-    meal.assignedTo = req.user.id;
-    await meal.save();
-
-    // Update associated task
-    await Task.findOneAndUpdate(
-      { meal: meal._id },
-      { 
-        status: 'in-progress',
-        startTime: Date.now()
-      }
-    );
-
-    res.status(200).json({
+    res.json({
       success: true,
-      data: meal
+      data: task
     });
   } catch (error) {
+    console.error('Error updating delivery status:', error);
     res.status(400).json({
       success: false,
-      message: error.message
-    });
-  }
-};
-
-// @desc    Complete delivery
-// @route   PUT /api/v1/deliveries/:id/complete
-// @access  Private (Delivery Staff)
-exports.completeDelivery = async (req, res) => {
-  try {
-    const meal = await Meal.findById(req.params.id);
-
-    if (!meal) {
-      return res.status(404).json({
-        success: false,
-        message: 'Meal not found'
-      });
-    }
-
-    if (meal.status !== 'delivering') {
-      return res.status(400).json({
-        success: false,
-        message: 'Meal is not being delivered'
-      });
-    }
-
-    if (meal.assignedTo.toString() !== req.user.id) {
-      return res.status(403).json({
-        success: false,
-        message: 'Not authorized to complete this delivery'
-      });
-    }
-
-    meal.status = 'delivered';
-    meal.deliveredBy = req.user.id;
-    meal.deliveryTime = Date.now();
-    await meal.save();
-
-    // Update associated task
-    await Task.findOneAndUpdate(
-      { meal: meal._id },
-      { 
-        status: 'completed',
-        completionTime: Date.now()
-      }
-    );
-
-    res.status(200).json({
-      success: true,
-      data: meal
-    });
-  } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error.message
+      message: error.message || 'Failed to update delivery status'
     });
   }
 };
 
 // @desc    Get delivery statistics
 // @route   GET /api/v1/deliveries/stats
-// @access  Private (Manager)
+// @access  Private
 exports.getDeliveryStats = async (req, res) => {
   try {
-    const stats = await Meal.aggregate([
-      {
-        $match: {
-          status: 'delivered'
-        }
-      },
+    const stats = await Task.aggregate([
+      { $match: { type: 'delivery' } },
       {
         $group: {
-          _id: '$deliveredBy',
-          totalDeliveries: { $sum: 1 },
-          averageDeliveryTime: {
-            $avg: {
-              $subtract: ['$deliveryTime', '$preparationTime']
-            }
-          }
-        }
-      },
-      {
-        $lookup: {
-          from: 'users',
-          localField: '_id',
-          foreignField: '_id',
-          as: 'deliveryStaff'
+          _id: '$status',
+          count: { $sum: 1 }
         }
       }
     ]);
 
-    res.status(200).json({
+    res.json({
       success: true,
       data: stats
     });
   } catch (error) {
-    res.status(400).json({
+    console.error('Error fetching delivery stats:', error);
+    res.status(500).json({
       success: false,
-      message: error.message
+      message: error.message || 'Failed to fetch delivery statistics'
     });
   }
 }; 

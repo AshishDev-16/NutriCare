@@ -1,32 +1,19 @@
 const express = require('express');
 const router = express.Router();
-const {
+const { protect } = require('../middleware/auth.middleware');
+const { 
   getDeliveries,
-  getMyDeliveries,
-  startDelivery,
-  completeDelivery,
-  getDeliveryStats
+  updateDeliveryStatus,
+  getDeliveryStats 
 } = require('../controllers/delivery.controller');
-const { protect, authorize } = require('../middleware/auth.middleware');
 
-router
-  .route('/')
-  .get(protect, authorize('delivery_staff', 'manager'), getDeliveries);
+// Get all deliveries
+router.get('/', protect, getDeliveries);
 
-router
-  .route('/my-deliveries')
-  .get(protect, authorize('delivery_staff'), getMyDeliveries);
+// Update delivery status
+router.put('/:id/status', protect, updateDeliveryStatus);
 
-router
-  .route('/:id/start')
-  .put(protect, authorize('delivery_staff'), startDelivery);
-
-router
-  .route('/:id/complete')
-  .put(protect, authorize('delivery_staff'), completeDelivery);
-
-router
-  .route('/stats')
-  .get(protect, authorize('manager'), getDeliveryStats);
+// Get delivery statistics
+router.get('/stats', protect, getDeliveryStats);
 
 module.exports = router; 

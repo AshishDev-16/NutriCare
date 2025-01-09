@@ -6,10 +6,7 @@ router.use((req, res, next) => {
   console.log('API Request:', {
     method: req.method,
     path: req.path,
-    headers: {
-      authorization: req.headers.authorization ? 'Present' : 'Missing',
-      'content-type': req.headers['content-type']
-    }
+    headers: req.headers.authorization ? 'Bearer token present' : 'No token'
   });
   next();
 });
@@ -21,10 +18,11 @@ router.use('/diet-charts', require('./dietChart.routes'));
 router.use('/dashboard', require('./dashboard.routes'));
 router.use('/pantry', require('./pantry.routes'));
 router.use('/tasks', require('./task.routes'));
+router.use('/deliveries', require('./delivery.routes'));
 
-// Catch-all to log unmatched routes
+// Catch-all for unmatched routes
 router.use('*', (req, res) => {
-  console.log('No route matched:', req.method, req.path);
+  console.log('No route matched:', req.method, req.baseUrl);
   res.status(404).json({ message: 'Route not found' });
 });
 

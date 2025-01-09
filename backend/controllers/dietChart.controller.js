@@ -1,4 +1,5 @@
 const DietChart = require('../models/DietChart');
+const { logActivity } = require('./dashboard.controller');
 
 // @desc    Get all diet charts
 // @route   GET /api/v1/diet-charts
@@ -40,6 +41,12 @@ exports.createDietChart = async (req, res) => {
     const dietChart = await DietChart.create(req.body);
     await dietChart.populate('patient', 'name');
     await dietChart.populate('createdBy', 'name');
+
+    await logActivity('diet_chart_created', 'New diet chart created', {
+      patientName: dietChart.patient.name,
+      roomNumber: dietChart.patient.roomNumber,
+      staffName: req.user.name
+    });
 
     res.status(201).json({
       success: true,

@@ -278,6 +278,7 @@ exports.createPantryStaff = async (req, res) => {
 exports.updatePantryStaff = async (req, res) => {
   try {
     const { name, email, contactNumber, floor, wing } = req.body;
+    console.log('Update request body:', req.body); // Debug log
 
     // First find the pantry staff
     const pantryStaff = await PantryStaff.findById(req.params.id);
@@ -294,29 +295,35 @@ exports.updatePantryStaff = async (req, res) => {
       email
     });
 
-    // Update pantry staff details
+    // Update pantry staff details with location
     const updatedPantryStaff = await PantryStaff.findByIdAndUpdate(
       req.params.id,
       {
         contactNumber,
         location: {
-          floor,
-          wing
+          floor: floor || '',
+          wing: wing || ''
         }
       },
       { new: true }
     ).populate('user', 'name email');
 
+    console.log('Updated staff:', updatedPantryStaff); // Debug log
+
+    const responseData = {
+      _id: updatedPantryStaff._id,
+      name: updatedPantryStaff.user.name,
+      email: updatedPantryStaff.user.email,
+      contactNumber: updatedPantryStaff.contactNumber,
+      location: updatedPantryStaff.location,
+      status: updatedPantryStaff.status
+    };
+
+    console.log('Response data:', responseData); // Debug log
+
     res.json({
       success: true,
-      data: {
-        _id: updatedPantryStaff._id,
-        name: updatedPantryStaff.user.name,
-        email: updatedPantryStaff.user.email,
-        contactNumber: updatedPantryStaff.contactNumber,
-        location: updatedPantryStaff.location,
-        status: updatedPantryStaff.status
-      }
+      data: responseData
     });
   } catch (error) {
     console.error('Error updating pantry staff:', error);

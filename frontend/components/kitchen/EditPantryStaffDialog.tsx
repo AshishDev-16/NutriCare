@@ -72,15 +72,17 @@ export function EditPantryStaffDialog({ staff, open, onOpenChange }: EditPantryS
 
     try {
       setIsLoading(true)
-      await updatePantryStaff(staff._id, {
+      const updateData = {
         name: values.name,
         email: values.email,
         contactNumber: values.contactNumber,
-        location: {
-          floor: values.floor,
-          wing: values.wing
-        }
-      })
+        floor: values.floor,
+        wing: values.wing
+      };
+
+      console.log('Sending update data:', updateData); // Debug log
+
+      await updatePantryStaff(staff._id, updateData);
 
       toast({
         title: "Success",

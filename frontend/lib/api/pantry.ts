@@ -66,25 +66,26 @@ export async function createPantryStaff(data: Omit<PantryStaff, '_id' | 'status'
   return responseData.data
 }
 
-export async function updatePantryStaff(id: string, data: Partial<PantryStaff>) {
+export async function updatePantryStaff(id: string, data: {
+  name: string
+  email: string
+  contactNumber: string
+  floor: string
+  wing: string
+}) {
   const token = localStorage.getItem("token")
-  
-  if (!token) {
-    throw new Error("No authentication token found")
-  }
-
   const response = await fetch(`${getBaseUrl()}/api/v1/pantry/staff/${id}`, {
     method: 'PUT',
     headers: {
-      Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify(data)
+    body: JSON.stringify(data),
   })
 
   if (!response.ok) {
     const error = await response.json()
-    throw new Error(error.message || "Failed to update pantry staff")
+    throw new Error(error.message || "Failed to update staff member")
   }
 
   const responseData = await response.json()

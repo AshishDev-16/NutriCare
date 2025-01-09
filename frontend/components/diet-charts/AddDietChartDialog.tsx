@@ -487,8 +487,8 @@ export function AddDietChartDialog({ open, onOpenChange }: AddDietChartDialogPro
                   >
                     Cancel
                   </Button>
-                  <Button type="submit">
-                    Create Diet Chart
+                  <Button type="submit" disabled={isLoading}>
+                    {isLoading ? "Adding..." : "Add Diet Chart"}
                   </Button>
                 </div>
               </>

@@ -10,19 +10,18 @@ import {
   ClipboardList,
   TruckIcon,
   Settings,
-  X
+  X,
+  LucideIcon
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 interface DashboardSidebarProps {
-  children: React.ReactNode
   open: boolean
   onClose: () => void
 }
 
-export default function DashboardSidebar({ children, open, onClose }: DashboardSidebarProps) {
+export default function DashboardSidebar({ open, onClose }: DashboardSidebarProps) {
   const pathname = usePathname()
-  const role = "manager" // This should come from auth context
 
   const managerLinks = [
     {
@@ -95,7 +94,11 @@ function SidebarContent({
   onClose, 
   pathname 
 }: { 
-  links: any[], 
+  links: Array<{
+    title: string
+    href: string
+    icon: LucideIcon
+  }>, 
   onClose: () => void, 
   pathname: string 
 }) {

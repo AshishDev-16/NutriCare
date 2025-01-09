@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation"
 import {
   Avatar,
   AvatarFallback,
-  AvatarImage,
 } from "@/components/ui/avatar"
 import {
   DropdownMenu,
@@ -40,7 +39,7 @@ export function UserNav() {
 
       // Redirect to login
       router.push('/login')
-    } catch (error) {
+    } catch {
       toast({
         variant: "destructive",
         title: "Error",

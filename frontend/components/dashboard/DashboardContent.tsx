@@ -4,18 +4,10 @@ import { Users, ClipboardList, UtensilsCrossed, Truck, Calendar, CheckCircle } f
 import { useDashboard } from "@/hooks/useDashboard"
 import { format } from "date-fns"
 import { Button } from "@/components/ui/button"
-import { useEffect } from "react"
 import { StatsCard } from "./StatsCard"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 export function DashboardContent() {
   const { stats, isLoading, error, mutate } = useDashboard()
-
-  // useEffect(() => {
-  //   // Log any errors for debugging
-  //   if (error) {
-  //     console.error('Dashboard Error:', error)
-  //   }
-  // }, [error])
 
   if (isLoading) {
     return (

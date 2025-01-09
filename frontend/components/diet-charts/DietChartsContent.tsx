@@ -5,11 +5,9 @@ import { Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DietChartsTable } from "./DietChartsTable"
 import { AddDietChartDialog } from "./AddDietChartDialog"
-import { useToast } from "@/hooks/use-toast"
 
 export function DietChartsContent() {
   const [open, setOpen] = useState(false)
-  const { toast } = useToast()
 
   return (
     <div className="flex-1 space-y-4">

@@ -13,7 +13,7 @@ const app = express();
 app.use(helmet());
 app.use(morgan('dev'));
 app.use(cors({
-  origin: [process.env.FRONTEND_URL, 'https://nutricare-frontend.vercel.app'],
+  origin: [process.env.FRONTEND_URL, 'https://hospital-food-delivery-m38p.vercel.app/'],
   credentials: true
 }));
 app.use(express.json());

@@ -36,6 +36,10 @@ This software is provided under strict license terms. The following are strictly
 - Reverse engineering
 - Commercial use or exploitation
 
+## License
+
+This project is proprietary software. See the [LICENSE](LICENSE) file in the repository for the full license text.
+
 ## Contact
 
 For licensing inquiries or permissions, please contact:

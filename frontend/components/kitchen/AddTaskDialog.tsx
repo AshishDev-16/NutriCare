@@ -89,8 +89,8 @@ export function AddTaskDialog({ open, onOpenChange }: AddTaskDialogProps) {
         ...(deliveryLocation && { deliveryLocation })
       };
 
-      console.log('Data being sent to API:', taskData);
-      await createTask(taskData);
+      // console.log('Data being sent to API:', taskData);
+      // await createTask(taskData);
       
       toast({
         title: "Success",

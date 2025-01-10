@@ -148,9 +148,6 @@ export async function getPantryTasks(type: 'preparation' | 'delivery'): Promise<
 
   const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '') || 'http://localhost:5000'
   const url = `${baseUrl}/api/v1/pantry/tasks?type=${type}`
-  
-  console.log('Fetching tasks from:', url); // Log URL
-  console.log('With token:', token); // Log token (be careful with this in production)
 
   const response = await fetch(url, {
     headers: {

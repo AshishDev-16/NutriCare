@@ -48,3 +48,8 @@ kaduashish15@gmail.com
 ---
 
 **WARNING**: Unauthorized use, reproduction, or distribution of this software may result in severe civil and criminal penalties, and will be prosecuted to the maximum extent possible under law. 
+
+
+Email: hospital_manager@xyz.com
+Email: hospital_pantry@xyz.com
+Password: Password@2025

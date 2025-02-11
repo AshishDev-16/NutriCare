@@ -70,7 +70,6 @@ export function AddTaskDialog({ open, onOpenChange }: AddTaskDialogProps) {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       setIsLoading(true)
-      console.log('Form values:', values);
       
       // Create delivery location object if type is delivery
       const deliveryLocation = values.type === 'delivery' ? {
@@ -89,25 +88,29 @@ export function AddTaskDialog({ open, onOpenChange }: AddTaskDialogProps) {
         ...(deliveryLocation && { deliveryLocation })
       };
 
-      // console.log('Data being sent to API:', taskData);
-      // await createTask(taskData);
+      // Create the task
+      await createTask(taskData);
       
       toast({
         title: "Success",
         description: "Task created successfully",
-      })
-      mutate()
-      onOpenChange(false)
-      form.reset()
+      });
+      
+      // Refresh the tasks list
+      await mutate();
+      
+      // Close the dialog and reset form
+      onOpenChange(false);
+      form.reset();
     } catch (error) {
-      console.error('Error creating task:', error)
+      console.error('Error creating task:', error);
       toast({
         variant: "destructive",
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to create task",
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 

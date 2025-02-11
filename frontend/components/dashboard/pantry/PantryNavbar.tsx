@@ -13,7 +13,7 @@ import { LogOut, User } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
 import Link from "next/link"
-
+import { NotificationPanel } from "@/components/notifications/NotificationPanel"
 export function PantryNavbar() {
   const router = useRouter()
   const { toast } = useToast()
@@ -47,6 +47,7 @@ export function PantryNavbar() {
           <span className="text-2xl font-bold text-primary">NutriCare</span>
         </Link>
         <div className="ml-auto flex items-center space-x-4">
+          <NotificationPanel/>
           <DropdownMenu>
             <DropdownMenuTrigger>
               <Avatar className="h-8 w-8 cursor-pointer">

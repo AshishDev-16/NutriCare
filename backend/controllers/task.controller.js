@@ -1,5 +1,6 @@
 const Task = require('../models/Task');
 const PantryStaff = require('../models/PantryStaff');
+const notificationService = require('../services/NotificationService');
 
 // @desc    Get all tasks
 // @route   GET /api/v1/tasks
@@ -51,12 +52,18 @@ exports.createTask = async (req, res) => {
       createdBy: req.user._id
     });
 
-    // If staff is assigned, update their currentTasks
+    // If staff is assigned, update their currentTasks and send notification
     if (assignedTo) {
       await PantryStaff.findByIdAndUpdate(assignedTo, {
         $push: { currentTasks: task._id },
         status: 'busy'
       });
+
+      // Send notification to assigned staff
+      notificationService.sendNotification('pantry_staff', `New ${type} task assigned: ${description}`);
+    } else {
+      // Send notification to all pantry staff about unassigned task
+      notificationService.sendNotification('pantry_staff', `New unassigned ${type} task available: ${description}`);
     }
 
     // Populate the assigned staff details

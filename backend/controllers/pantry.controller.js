@@ -1,5 +1,6 @@
 const Task = require('../models/Task');
 const PantryStaff = require('../models/PantryStaff');
+const notificationService = require('../services/NotificationService');
 
 // @desc    Get all tasks for pantry staff
 // @route   GET /api/v1/pantry/tasks
@@ -73,6 +74,18 @@ exports.updateTaskStatus = async (req, res) => {
         message: 'Task not found'
       });
     }
+
+    // Send notification to managers about task status update
+    const statusMessage = {
+      'in_progress': 'started working on',
+      'completed': 'completed',
+      'pending': 'marked as pending'
+    };
+
+    notificationService.sendNotification(
+      'manager', 
+      `Task ${task.description} has been ${statusMessage[status]} by ${task.assignedTo?.name || 'staff'}`
+    );
 
     res.json({
       success: true,

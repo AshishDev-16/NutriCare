@@ -5,8 +5,8 @@ import DashboardLayout from "@/components/common/DashboardLayout"
 
 export default function DietChartsPage() {
   return (
-    <DashboardLayout>
+  
       <DietChartsContent />
-    </DashboardLayout>
+    
   )
 } 

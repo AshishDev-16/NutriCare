@@ -18,21 +18,21 @@ const server = http.createServer(app);
 // CORS Configuration
 const allowedOrigins = [
   'http://localhost:3000',
-  'https://hospital-food-delivery.vercel.app/',
-  'https://hospital-food-delivery-git-main-ashish.vercel.app/',
-  'https://hospital-food-delivery-ashish.vercel.app/'
+  'https://hospital-food-delivery.vercel.app',
+  'https://hospital-food-delivery-git-main-ashish.vercel.app',
+  'https://hospital-food-delivery-ashish.vercel.app'
 ];
 
 // Socket.io setup with CORS
 const io = new Server(server, {
     cors: {
         origin: allowedOrigins,
-        methods: ["GET", "POST"],
+        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         credentials: true,
-        allowedHeaders: ['Content-Type', 'Authorization']
+        allowedHeaders: ["Content-Type", "Authorization"]
     },
-    transports: ['websocket'],
-    upgrade: false
+    transports: ['websocket', 'polling'],
+    upgrade: true
 });
 
 // JWT authentication middleware for Socket.io
@@ -75,13 +75,19 @@ io.on('connection', (socket) => {
 // Add io instance to notificationService
 notificationService.setIo(io);
 
-// Express CORS middleware
+// Express CORS middleware with more specific configuration
 app.use(cors({
   origin: function(origin, callback) {
+    console.log('Request origin:', origin);
+    
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
     
-    if (allowedOrigins.indexOf(origin) === -1) {
+    // Remove trailing slash from origin for comparison
+    const normalizedOrigin = origin.endsWith('/') ? origin.slice(0, -1) : origin;
+    
+    if (!allowedOrigins.includes(normalizedOrigin)) {
+      console.log('Origin not allowed:', normalizedOrigin);
       const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
       return callback(new Error(msg), false);
     }
@@ -89,7 +95,18 @@ app.use(cors({
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Access-Control-Allow-Origin']
+  allowedHeaders: [
+    'Content-Type', 
+    'Authorization', 
+    'Origin',
+    'X-Requested-With',
+    'Accept',
+    'Access-Control-Allow-Origin',
+    'Access-Control-Allow-Methods',
+    'Access-Control-Allow-Headers'
+  ],
+  exposedHeaders: ['Access-Control-Allow-Origin'],
+  maxAge: 86400  // 24 hours
 }));
 
 // Other middleware
@@ -98,6 +115,9 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+// Add pre-flight OPTIONS handler
+app.options('*', cors());  // Enable pre-flight for all routes
 
 // Routes
 app.use('/api/v1', require('./routes/index.routes'));

@@ -122,6 +122,7 @@ app.options('*', cors());  // Enable pre-flight for all routes
 // Routes
 app.use('/api/v1', require('./routes/index.routes'));
 app.use('/api/v1/notifications', require('./routes/notification.routes'));
+app.use('/api/v1/pantry', require('./routes/pantry.routes'));
 
 // Health check route
 app.get('/health', (req, res) => {

@@ -18,16 +18,18 @@ const server = http.createServer(app);
 // CORS Configuration
 const allowedOrigins = [
   'http://localhost:3000',
-  process.env.FRONTEND_URL,
-  'https://hospital-food-delivery.vercel.app/'
+  'https://hospital-food-delivery.vercel.app/',
+  'https://hospital-food-delivery-git-main-ashish.vercel.app/',
+  'https://hospital-food-delivery-ashish.vercel.app/'
 ];
 
-// Socket.io setup with JWT auth middleware
+// Socket.io setup with CORS
 const io = new Server(server, {
     cors: {
         origin: allowedOrigins,
         methods: ["GET", "POST"],
-        credentials: true
+        credentials: true,
+        allowedHeaders: ['Content-Type', 'Authorization']
     },
     transports: ['websocket'],
     upgrade: false
@@ -73,8 +75,10 @@ io.on('connection', (socket) => {
 // Add io instance to notificationService
 notificationService.setIo(io);
 
+// Express CORS middleware
 app.use(cors({
   origin: function(origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
     
     if (allowedOrigins.indexOf(origin) === -1) {
@@ -85,7 +89,7 @@ app.use(cors({
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'Access-Control-Allow-Origin']
 }));
 
 // Other middleware

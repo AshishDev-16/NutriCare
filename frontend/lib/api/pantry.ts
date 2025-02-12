@@ -174,9 +174,9 @@ export async function updateTaskStatus(
   const token = localStorage.getItem('token')
   if (!token) throw new Error('No token found')
 
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1'
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '') || 'http://localhost:5000'
   
-  const response = await fetch(`${baseUrl}/pantry/tasks/${taskId}/status`, {
+  const response = await fetch(`${baseUrl}/api/v1/pantry/tasks/${taskId}/status`, {
     method: 'PATCH',
     headers: {
       'Authorization': `Bearer ${token}`,
@@ -186,6 +186,11 @@ export async function updateTaskStatus(
   })
 
   if (!response.ok) {
+    console.error('Failed to update task status:', {
+      status: response.status,
+      taskId,
+      statusUpdate: status
+    });
     throw new Error('Failed to update task status')
   }
 

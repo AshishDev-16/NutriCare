@@ -51,22 +51,32 @@ export async function createTask(data: {
   const token = localStorage.getItem("token")
   if (!token) throw new Error("No authentication token found")
 
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1'
-  const response = await fetch(`${baseUrl}/tasks`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(data)
-  })
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '') || 'http://localhost:5000'
+  
+  try {
+    const response = await fetch(`${baseUrl}/api/v1/tasks`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data)
+    });
 
-  if (!response.ok) {
-    const error = await response.json()
-    console.error('Task creation error:', error)
-    throw new Error(error.message || "Failed to create task")
+    if (!response.ok) {
+      const error = await response.json();
+      console.error('Task creation error:', {
+        status: response.status,
+        error,
+        data
+      });
+      throw new Error(error.message || "Failed to create task");
+    }
+
+    const responseData = await response.json();
+    return responseData.data;
+  } catch (error) {
+    console.error('Task creation failed:', error);
+    throw error;
   }
-
-  const responseData = await response.json()
-  return responseData.data
 } 

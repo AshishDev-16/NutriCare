@@ -1,10 +1,10 @@
-# NutriCare - Hospital Food Delivery Management System
+# VitalFlow - Hospital Food Delivery Management System
 
-NutriCare is a proprietary hospital food service management system designed to streamline dietary operations, meal delivery, and patient care coordination. This system is protected by copyright and intellectual property laws.
+VitalFlow is a proprietary hospital food service management system designed to streamline dietary operations, meal delivery, and patient care coordination. This system is protected by copyright and intellectual property laws.
 
 ## Overview
 
-NutriCare provides an end-to-end solution for:
+VitalFlow provides an end-to-end solution for:
 - Patient Diet Management
 - Kitchen Operations Coordination
 - Real-time Delivery Tracking
@@ -15,7 +15,7 @@ NutriCare provides an end-to-end solution for:
 
 **IMPORTANT: This software is proprietary and confidential.**
 
-© 2024 NutriCare. All Rights Reserved.
+© 2024 VitalFlow. All Rights Reserved.
 
 This software and its documentation are protected by copyright and other intellectual property laws. No part of this software may be reproduced, distributed, or transmitted in any form or by any means, including photocopying, recording, or other electronic or mechanical methods, without the prior written permission of the copyright holder.
 

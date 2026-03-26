@@ -14,6 +14,7 @@ import {
   Clock,
   type LucideIcon 
 } from "lucide-react"
+import { motion } from "framer-motion"
 
 interface Activity {
   id: string
@@ -29,6 +30,9 @@ interface Activity {
 
 interface ActivityFeedProps {
   isLoading: boolean
+  limit?: number
+  className?: string
+  hideHeader?: boolean
 }
 
 const activityIcons: Record<Activity['type'], LucideIcon> = {
@@ -40,33 +44,35 @@ const activityIcons: Record<Activity['type'], LucideIcon> = {
 }
 
 const activityColors: Record<Activity['type'], string> = {
-  diet_chart_created: 'text-blue-500',
-  delivery_completed: 'text-green-500',
-  delivery_delayed: 'text-red-500',
-  task_completed: 'text-green-500',
-  task_assigned: 'text-orange-500',
+  diet_chart_created: 'bg-blue-100 text-blue-600',
+  delivery_completed: 'bg-emerald-100 text-emerald-600',
+  delivery_delayed: 'bg-red-100 text-red-600',
+  task_completed: 'bg-emerald-100 text-emerald-600',
+  task_assigned: 'bg-slate-100 text-slate-600',
 }
 
-export function ActivityFeed({ isLoading }: ActivityFeedProps) {
+export function ActivityFeed({ isLoading, limit, className, hideHeader }: ActivityFeedProps) {
   const { data: activities = [] } = useSWR<Activity[]>(
     '/api/v1/dashboard/activities',
     getActivities
   )
 
+  const displayedActivities = limit ? activities.slice(0, limit) : activities
+
   if (isLoading) {
     return (
-      <Card>
+      <Card className="border-none bg-white shadow-sm">
         <CardHeader>
-          <CardTitle>Recent Activity</CardTitle>
+          <CardTitle className="text-lg font-bold text-slate-900 tracking-tight">System Operations Log</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
+          <div className="space-y-6">
             {[...Array(5)].map((_, i) => (
               <div key={i} className="flex items-start space-x-4">
-                <Skeleton className="h-8 w-8 rounded-full" />
-                <div className="space-y-2">
-                  <Skeleton className="h-4 w-[250px]" />
-                  <Skeleton className="h-4 w-[200px]" />
+                <Skeleton className="h-10 w-10 rounded-xl" />
+                <div className="space-y-2 flex-1">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-3 w-[150px]" />
                 </div>
               </div>
             ))}
@@ -77,45 +83,60 @@ export function ActivityFeed({ isLoading }: ActivityFeedProps) {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Recent Activity</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <ScrollArea className="h-[400px]">
-          <div className="space-y-4">
-            {activities.map((activity) => {
+    <Card className="border-none bg-white shadow-sm overflow-hidden">
+      {!hideHeader && (
+        <CardHeader className="pb-4">
+          <CardTitle className="text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2">
+             <span className="w-2 h-6 bg-[#065f46] rounded-full" />
+             Live Operations Stream
+          </CardTitle>
+          <p className="text-sm text-slate-400 font-medium">Real-time clinical and logistical activity</p>
+        </CardHeader>
+      )}
+      <CardContent className="p-0">
+        <ScrollArea className="h-[450px] px-6">
+          <div className="space-y-0 relative pb-8">
+            <div className="absolute left-[20px] top-4 bottom-8 w-px bg-slate-100" />
+
+            {displayedActivities.map((activity, idx) => {
               const Icon = activityIcons[activity.type]
               return (
-                <div
+                <motion.div
                   key={activity.id}
-                  className="flex items-start space-x-4"
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: idx * 0.05 }}
+                  className="flex items-start gap-6 py-4 group relative"
                 >
-                  <div className={`mt-0.5 ${activityColors[activity.type]}`}>
+                  <div className={`z-10 flex-shrink-0 w-10 h-10 rounded-xl ${activityColors[activity.type]} flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-300`}>
                     <Icon className="h-5 w-5" />
                   </div>
-                  <div className="space-y-1">
-                    <p className="text-sm">
+                  <div className="space-y-1 pt-1 flex-1">
+                    <p className="text-sm font-semibold text-slate-800 leading-tight">
                       {activity.message}
                       {activity.meta?.patientName && (
-                        <span className="font-medium">
-                          {' '}for {activity.meta.patientName}
+                        <span className="text-[#065f46] bg-[#065f46]/5 px-2 py-0.5 rounded-md mx-1">
+                          {activity.meta.patientName}
                         </span>
                       )}
+                    </p>
+                    <div className="flex items-center gap-3">
+                      <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">
+                        {format(new Date(activity.timestamp), 'HH:mm:ss')}
+                      </p>
                       {activity.meta?.roomNumber && (
-                        <span className="text-muted-foreground">
-                          {' '}(Room {activity.meta.roomNumber})
+                        <span className="text-xs font-bold text-slate-400">
+                          • Room {activity.meta.roomNumber}
                         </span>
                       )}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {format(new Date(activity.timestamp), 'MMM d, h:mm a')}
                       {activity.meta?.staffName && (
-                        <span> by {activity.meta.staffName}</span>
+                        <span className="text-xs font-bold text-slate-400">
+                          • {activity.meta.staffName}
+                        </span>
                       )}
-                    </p>
+                    </div>
                   </div>
-                </div>
+                </motion.div>
               )
             })}
           </div>
@@ -124,3 +145,4 @@ export function ActivityFeed({ isLoading }: ActivityFeedProps) {
     </Card>
   )
 } 
+ 

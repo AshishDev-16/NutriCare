@@ -1,13 +1,13 @@
 import DashboardLayout from "@/components/common/DashboardLayout"
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute"
 
-export default function ManagerDashboardLayout({
+export default function PantryDashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
   return (
-    <ProtectedRoute allowedRoles={['manager']}>
+    <ProtectedRoute allowedRoles={['pantry_staff']}>
       <DashboardLayout>{children}</DashboardLayout>
     </ProtectedRoute>
   )

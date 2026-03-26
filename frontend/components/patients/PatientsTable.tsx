@@ -35,56 +35,71 @@ export function PatientsTable() {
 
   return (
     <>
-      <div className="rounded-md border">
+      <div className="overflow-hidden">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Room</TableHead>
-              <TableHead>Age</TableHead>
-              <TableHead>Gender</TableHead>
-              <TableHead>Diseases</TableHead>
-              <TableHead>Contact</TableHead>
-              <TableHead className="w-[70px]"></TableHead>
+            <TableRow className="bg-slate-50/50 dark:bg-slate-900/50 hover:bg-transparent border-none">
+              <TableHead className="py-5 font-bold text-slate-900 dark:text-emerald-400">Name</TableHead>
+              <TableHead className="py-5 font-bold text-slate-900 dark:text-emerald-400">Location (Room-Bed)</TableHead>
+              <TableHead className="py-5 font-bold text-slate-900 dark:text-emerald-400">Age</TableHead>
+              <TableHead className="py-5 font-bold text-slate-900 dark:text-emerald-400">Gender</TableHead>
+              <TableHead className="py-5 font-bold text-slate-900 dark:text-emerald-400">Clinical Conditions</TableHead>
+              <TableHead className="py-5 font-bold text-slate-900 dark:text-emerald-400">Contact</TableHead>
+              <TableHead className="py-5 w-[70px]"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {Array.isArray(patients) && patients.map((patient: Patient) => (
-              <TableRow key={patient._id || patient.id}>
-                <TableCell>{patient.name}</TableCell>
-                <TableCell>{`${patient.roomNumber}-${patient.bedNumber}`}</TableCell>
-                <TableCell>{patient.age}</TableCell>
-                <TableCell>{patient.gender}</TableCell>
-                <TableCell>{Array.isArray(patient.diseases) ? patient.diseases.join(", ") : patient.diseases}</TableCell>
-                <TableCell>{patient.contactNumber}</TableCell>
-                <TableCell>
+              <TableRow 
+                key={patient._id || patient.id}
+                className="group border-b border-slate-100 dark:border-slate-800 hover:bg-emerald-50/30 dark:hover:bg-emerald-900/10 transition-colors"
+              >
+                <TableCell className="py-4 font-semibold text-slate-700 dark:text-slate-300">{patient.name}</TableCell>
+                <TableCell className="py-4 font-medium text-slate-500">{`${patient.roomNumber}-${patient.bedNumber}`}</TableCell>
+                <TableCell className="py-4 text-slate-500 font-medium">{patient.age}</TableCell>
+                <TableCell className="py-4">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+                    {patient.gender}
+                  </span>
+                </TableCell>
+                <TableCell className="py-4">
+                  <div className="flex flex-wrap gap-1">
+                    {(Array.isArray(patient.diseases) ? patient.diseases : [patient.diseases]).map((d, i) => (
+                      <span key={i} className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-2 py-0.5 rounded-md">
+                        {d}
+                      </span>
+                    ))}
+                  </div>
+                </TableCell>
+                <TableCell className="py-4 text-slate-500 font-medium">{patient.contactNumber}</TableCell>
+                <TableCell className="py-4">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="h-8 w-8 p-0">
+                      <Button variant="ghost" className="h-8 w-8 p-0 rounded-lg hover:bg-white shadow-sm transition-all focus-visible:ring-emerald-500">
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                    <DropdownMenuContent align="end" className="rounded-xl border-slate-200 shadow-xl p-1">
+                      <DropdownMenuLabel className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-2 py-1.5">Operations</DropdownMenuLabel>
                       <DropdownMenuItem
                         onClick={() => {
                           setSelectedPatient(patient)
                           setEditDialogOpen(true)
                         }}
-                        className="cursor-pointer"
+                        className="cursor-pointer rounded-lg font-medium focus:bg-emerald-50 focus:text-emerald-600 dark:focus:bg-emerald-900/20"
                       >
                         <Pencil className="mr-2 h-4 w-4" />
-                        Edit
+                        Modify Record
                       </DropdownMenuItem>
                       <DropdownMenuItem
-                        className="cursor-pointer text-red-600"
+                        className="cursor-pointer text-red-600 rounded-lg font-medium focus:bg-red-50 focus:text-red-700 dark:focus:bg-red-900/20"
                         onClick={() => {
                           setSelectedPatient(patient)
                           setDeleteDialogOpen(true)
                         }}
                       >
                         <Trash className="mr-2 h-4 w-4" />
-                        Delete
+                        Terminate Entry
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>

@@ -1,7 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { useAuth } from "@/hooks/useAuth"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
@@ -20,63 +21,33 @@ import { useToast } from "@/hooks/use-toast"
 import Link from "next/link"
 import { LoginForm } from "@/components/forms/LoginForm"
 
-const formSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
-})
-
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
+  const { user, isAuthenticated } = useAuth()
   const { toast } = useToast()
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
-  })
-
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    try {
-      setIsLoading(true)
-      const { user, token } = await login(values)
-      localStorage.setItem('token', token)
-      
-      // Redirect based on user role
+  useEffect(() => {
+    if (isAuthenticated && user) {
       if (user.role === 'manager') {
         router.push('/manager')
       } else if (user.role === 'pantry_staff') {
         router.push('/pantry')
-      } else {
-        router.push('/dashboard')
       }
-
-      toast({
-        title: "Login successful",
-        description: `Welcome back, ${user.name}!`,
-      })
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Login failed",
-        description: error instanceof Error ? error.message : "Something went wrong",
-      })
-    } finally {
-      setIsLoading(false)
     }
-  }
+  }, [isAuthenticated, user, router])
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-white to-gray-100">
       <div className="w-full max-w-md space-y-8 px-4 bg-white rounded-xl shadow-lg py-12 sm:px-6 lg:px-8">
         <div className="text-center">
           <Link href="/" className="flex justify-center mb-6">
-            <span className="text-2xl font-bold text-primary">NutriCare</span>
+            <div className="w-12 h-12 bg-gradient-to-br from-[#004532] to-[#065f46] rounded-xl flex items-center justify-center shadow-lg shadow-[#065f46]/20 group-hover:scale-110 transition-transform">
+              <span className="text-white font-bold text-xl">VF</span>
+            </div>
           </Link>
-          <h2 className="text-3xl font-bold tracking-tight">
-            Welcome to NutriCare
+          <h2 className="text-3xl font-bold tracking-tight text-[#004532]">
+            Welcome to VitalFlow
           </h2>
           <p className="mt-2 text-sm text-muted-foreground">
             Enter your credentials to access your account

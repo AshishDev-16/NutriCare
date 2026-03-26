@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { motion, useScroll, useTransform } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { ArrowRight, Activity, Shield, Users, Clock, CheckCircle2 } from 'lucide-react'
+import { ArrowRight, Activity, Shield, Users, Clock, CheckCircle2, Github } from 'lucide-react'
 import { useRef } from "react"
 import { useAuth } from "@/hooks/useAuth"
 
@@ -31,12 +31,21 @@ export default function LandingPage() {
         <nav className="flex items-center gap-8">
           <Link href="#features" className="text-sm font-medium hover:text-[#065f46] transition-colors hidden md:block">Features</Link>
           <Link href="#impact" className="text-sm font-medium hover:text-[#065f46] transition-colors hidden md:block">Impact</Link>
-          <Link 
-            className="inline-flex items-center justify-center text-sm font-semibold text-white bg-gradient-to-br from-[#004532] to-[#065f46] hover:shadow-xl hover:shadow-[#065f46]/30 transition-all h-11 px-8 rounded-xl" 
-            href={isAuthenticated ? (user?.role === 'manager' ? '/manager' : '/pantry') : '/login'}
-          >
-            {isAuthenticated ? 'Go to Dashboard' : 'Staff Portal'}
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link 
+              href="https://github.com/AshishDev-16/VitalFlow" 
+              target="_blank"
+              className="p-2 rounded-xl border border-[#bec9c2]/20 hover:bg-slate-100 transition-colors"
+            >
+              <Github className="w-5 h-5 text-slate-600" />
+            </Link>
+            <Link 
+              className="inline-flex items-center justify-center text-sm font-semibold text-white bg-gradient-to-br from-[#004532] to-[#065f46] hover:shadow-xl hover:shadow-[#065f46]/30 transition-all h-11 px-8 rounded-xl" 
+              href={isAuthenticated ? (user?.role === 'manager' ? '/manager' : '/pantry') : '/login'}
+            >
+              {isAuthenticated ? 'Go to Dashboard' : 'Staff Portal'}
+            </Link>
+          </div>
         </nav>
       </header>
 
@@ -218,7 +227,7 @@ export default function LandingPage() {
               <Activity className="text-[#065f46] w-6 h-6" />
               <span className="font-bold text-xl text-[#004532]">VitalFlow</span>
             </div>
-            <p className="text-sm text-[#3f4944]">© 2024 Institutional Medical Solutions. ISO 27001 Certified.</p>
+            <p className="text-sm text-[#3f4944]">© 2024 Institutional Medical Solutions. Developed by Ashish. ISO 27001 Certified.</p>
             <nav className="flex gap-8">
               <Link className="text-sm font-semibold hover:text-[#065f46] transition-colors" href="#">Security</Link>
               <Link className="text-sm font-semibold hover:text-[#065f46] transition-colors" href="#">Compliance</Link>

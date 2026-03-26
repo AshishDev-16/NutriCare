@@ -5,12 +5,12 @@ import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import {
-  Clock,
-  CheckCircle2,
+import { 
+  Clock, 
+  CheckCircle2, 
   PlayCircle,
   AlertCircle,
-  Info
+  Info 
 } from "lucide-react"
 import useSWR from "swr"
 import { getPantryTasks, type Task } from "@/lib/api/pantry"
@@ -25,23 +25,22 @@ import {
 } from "@/components/ui/select"
 import { TaskDetailsModal } from "./TaskDetailsModal"
 import { formatDate } from "@/lib/utils"
+import { motion, AnimatePresence } from "framer-motion"
+import { cn } from "@/lib/utils"
 
-const statusIcons = {
+const statusIcons: Record<string, any> = {
   pending: Clock,
   in_progress: PlayCircle,
   completed: CheckCircle2,
   delayed: AlertCircle,
 }
 
-const statusColors = {
+const statusColors: Record<string, string> = {
   pending: "bg-yellow-100 text-yellow-800",
   in_progress: "bg-blue-100 text-blue-800",
   completed: "bg-green-100 text-green-800",
   delayed: "bg-red-100 text-red-800",
 }
-
-import { motion, AnimatePresence } from "framer-motion"
-import { cn } from "@/lib/utils"
 
 export function DeliveryTasks() {
   const [priorityFilter, setPriorityFilter] = useState<string>('all')
@@ -51,7 +50,7 @@ export function DeliveryTasks() {
     { revalidateOnFocus: false }
   )
 
-  const filteredTasks = tasks?.filter(task =>
+  const filteredTasks = tasks?.filter(task => 
     priorityFilter === 'all' ? true : task.priority === priorityFilter
   )
 
@@ -96,7 +95,7 @@ export function DeliveryTasks() {
       <div className="grid gap-4">
         <AnimatePresence mode="popLayout">
           {filteredTasks?.map((task, index) => {
-            const StatusIcon = statusIcons[task.status]
+            const StatusIcon = statusIcons[task.status] || Info
             return (
               <motion.div
                 key={task._id}
@@ -107,36 +106,36 @@ export function DeliveryTasks() {
                 <div className="group relative overflow-hidden p-6 bg-white dark:bg-[#0d1c2e] rounded-[2rem] border border-slate-100 dark:border-slate-800/50 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
                   <div className={cn(
                     "absolute top-0 left-0 w-1.5 h-full opacity-50 group-hover:opacity-100 transition-opacity",
-                    task.priority === 'high' ? "bg-rose-500" :
-                      task.priority === 'medium' ? "bg-amber-500" :
-                        "bg-blue-500"
+                    task.priority === 'high' ? "bg-rose-500" : 
+                    task.priority === 'medium' ? "bg-amber-500" : 
+                    "bg-blue-500"
                   )} />
-
+                  
                   <div className="flex items-start justify-between">
                     <div className="space-y-3">
                       <div className="flex items-center space-x-3">
                         <div className={cn(
                           "p-2 rounded-xl bg-opacity-10 dark:bg-opacity-20",
-                          task.priority === 'high' ? "bg-rose-500 text-rose-600 dark:text-rose-400" :
-                            task.priority === 'medium' ? "bg-amber-500 text-amber-600 dark:text-amber-400" :
-                              "bg-blue-500 text-blue-600 dark:text-blue-400"
+                          task.priority === 'high' ? "bg-rose-500 text-rose-600 dark:text-rose-400" : 
+                          task.priority === 'medium' ? "bg-amber-500 text-amber-600 dark:text-amber-400" : 
+                          "bg-blue-500 text-blue-600 dark:text-blue-400"
                         )}>
                           <StatusIcon className="h-5 w-5" />
                         </div>
                         <p className="text-lg font-bold text-slate-700 dark:text-slate-200">{task.description}</p>
-                        <Badge
+                        <Badge 
                           variant="outline"
                           className={cn(
                             "px-3 py-0.5 rounded-full border-none font-black text-[10px] uppercase tracking-tighter shadow-sm",
-                            task.priority === 'high' ? "bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400" :
-                              task.priority === 'medium' ? "bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400" :
-                                "bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
+                            task.priority === 'high' ? "bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400" : 
+                            task.priority === 'medium' ? "bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400" : 
+                            "bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
                           )}
                         >
                           {task.priority} Prio
                         </Badge>
                       </div>
-
+                      
                       <div className="flex items-center space-x-6">
                         <div className="flex items-center space-x-2 text-sm font-bold text-slate-400">
                           <span className="p-1.5 bg-slate-50 dark:bg-slate-800/50 rounded-lg">Staff</span>
@@ -152,20 +151,20 @@ export function DeliveryTasks() {
                     </div>
 
                     <div className="flex items-center space-x-3 self-center">
-                      <Badge
-                        variant="outline"
+                      <Badge 
+                        variant="outline" 
                         className={cn(
                           "px-4 py-1.5 rounded-xl font-black uppercase text-[10px] border-none shadow-md",
                           task.status === 'completed' ? "bg-emerald-500 text-white shadow-emerald-200 dark:shadow-none" :
-                            task.status === 'in_progress' ? "bg-indigo-500 text-white shadow-indigo-200 dark:shadow-none" :
-                              "bg-slate-400 text-white"
+                          task.status === 'in_progress' ? "bg-indigo-500 text-white shadow-indigo-200 dark:shadow-none" :
+                          "bg-slate-400 text-white"
                         )}
                       >
                         {task.status.replace('_', ' ')}
                       </Badge>
-
+                      
                       <div className="flex items-center space-x-1 p-1 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
-                        <TaskDetailsModal
+                        <TaskDetailsModal 
                           task={task}
                           onStatusUpdate={mutate}
                           trigger={
@@ -175,7 +174,7 @@ export function DeliveryTasks() {
                           }
                         />
                         {task.status !== 'completed' && (
-                          <StatusUpdateDialog
+                          <StatusUpdateDialog 
                             taskId={task._id}
                             onStatusUpdate={mutate}
                           />
